@@ -45,6 +45,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float coyoteTime = 0.12f;
 
     private Rigidbody2D rb;
+    [SerializeField]
+    private GameObject playerDirGameObject;
     //Movement
 
     private float targetDir = 0f;
@@ -80,6 +82,8 @@ public class PlayerController : MonoBehaviour
         instance = this;
 
         rb = GetComponent<Rigidbody2D>();
+
+       
     }
     private void Update()
     {
@@ -100,7 +104,15 @@ public class PlayerController : MonoBehaviour
             OnPlayerMovement?.Invoke(this, EventArgs.Empty);
         }
         SetDirection(dir);
-
+        if (targetDir == 1)
+        {
+            Debug.Log("Looking Right");
+            playerDirGameObject.gameObject.transform.localScale = Vector3.right;
+        }else if (targetDir == -1)
+        {
+            Debug.Log("Looking Left");
+            playerDirGameObject.gameObject.transform.localScale = Vector3.left;
+        }
         ///<summary
         ///Jump
         ///DoubleJump
@@ -329,18 +341,18 @@ public class PlayerController : MonoBehaviour
     {
         if ((ledgeDetected && canGrabLedge))
         {
-            if (targetDir == 0) return;
+            //if (targetDir == 0) return;
 
             canGrabLedge = false;
             isGliding = false;
             rb.gravityScale = 0f;
             Vector2 ledgePosition = LedgeDetection.Instance.transform.position;
-            if (targetDir == 1)
+            if (playerDirGameObject.transform.localScale== Vector3.right)
             {
                 climbBegunPosition = ledgePosition + offset1Right;
                 climbOverPosition = ledgePosition + offset2Right;
             }
-            if (targetDir == -1)
+            if (playerDirGameObject.transform.localScale == Vector3.left)
             {
                 climbBegunPosition = ledgePosition + offset1Left;
                 climbOverPosition = ledgePosition + offset2Left;
