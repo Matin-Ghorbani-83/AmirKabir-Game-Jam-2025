@@ -1,353 +1,388 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-
+[RequireComponent(typeof(Rigidbody2D))]
 public class PlayerController : MonoBehaviour
 {
     public static PlayerController instance { get; private set; }
 
-    public EventHandler OnPlayerMovement;
+    public event EventHandler OnPlayerMove;
+    public event EventHandler OnPlayerJump;
+    public event EventHandler OnPlayerDoubleJump;
+    public event EventHandler OnPlayerDash;
+    public event EventHandler OnPlayerGrab;
+    public event EventHandler OnPlayerGlideStart;
+    public event EventHandler OnPlayerGlideEnd;
 
     [Header("Movement")]
-    [SerializeField] float moveSpeed = 6f;
-    [SerializeField] float accel = 30f;
-    [SerializeField] float deccel = 40f;
+    [SerializeField] private float moveSpeed = 6f;
+    [SerializeField] private float accel = 30f;
+    [SerializeField] private float deccel = 40f;
 
     [Header("Jump")]
-    [SerializeField] Transform groundCheck;
-    [SerializeField] float groundCheckRadius = 0.12f;
-    [SerializeField] LayerMask groundLayer;
-    [SerializeField] float jumpImpulse = 10f;
-    [SerializeField] float variableJumpMultiplier = 0.6f;
-    [SerializeField] float maxHoldTime = 0.25f;
-    [SerializeField] float glideGravityScale = 0.8f;
+    [SerializeField] private Transform groundCheck;
+    [SerializeField] private float groundCheckRadius = 0.12f;
+    [SerializeField] private LayerMask groundLayer;
+    [SerializeField] private float jumpImpulse = 10f;
+    [SerializeField] private float variableJumpMultiplier = 0.6f;
+    [SerializeField] private float maxHoldTime = 0.25f;
+    [SerializeField] private float glideGravityScale = 0.1f;
 
     [Header("Dash")]
-    [SerializeField] float dashForce = 12f;
-    [SerializeField] float dashTime = 0.18f;
-    [SerializeField] float dashCooldown = 0.8f;
+    [SerializeField] private float dashForce = 12f;
+    [SerializeField] private float dashTime = 0.18f;
+    [SerializeField] private float dashCooldown = 0.8f;
 
     [Header("Grab")]
+    [SerializeField] private Vector2 offset1Right;
 
-    [SerializeField] Vector2 offset1Right;
-    [SerializeField] Vector2 offset2Right;
-
-    [SerializeField] Vector2 offset1Left;
-    [SerializeField] Vector2 offset2Left;
-
+    [SerializeField] private Vector2 offset2Right;
+    [SerializeField] private Vector2 offset1Left;
+    [SerializeField] private Vector2 offset2Left;
+    [SerializeField] private GameObject playerDirGameObject;
     [HideInInspector] public bool ledgeDetected;
 
-    [Header("UX tweaks")]
-    [SerializeField] float baseGravityScale = 3.5f;
-    [SerializeField] float gravityChangeSpeed = 8f;
-    [SerializeField] float coyoteTime = 0.12f;
+    [Header("Gravity & Tweaks")]
+    [SerializeField] private float baseGravityScale = 3.5f;
+    [SerializeField] private float gravityChangeSpeed = 8f;
+    [SerializeField] private float coyoteTime = 0.12f;
 
     private Rigidbody2D rb;
-    [SerializeField]
-    private GameObject playerDirGameObject;
-    //Movement
 
+    // Direction
     private float targetDir = 0f;
 
-    //jump
-    private KeyCode jumpKey = KeyCode.Space;
-    private float holdTimer = 0f;
-    private bool canDoubleJump = true;
+    // Jump
     private bool isGrounded;
+    private bool canDoubleJump = true;
     private bool didDoubleJump;
-    private bool jumpReleasedSoon;
+    private bool jumpReleasedEarly;
+    private float holdTimer = 0f;
+    private float coyoteTimer = 0f;
+    private bool jumpRequested;
+    private bool isGliding = false;
 
-    // internal flags jump
-    bool jumpRequested = false;
-    float coyoteTimer = 0f;
-    bool isGliding = false;
-
-    //Dash
+    // Dash
     private bool isDashing = false;
     private float dashTimer = 0f;
     private float cooldownTimer = 0f;
-    private bool dashRequested;
-
-    //Grab
-    private Vector2 climbBegunPosition;
-    private Vector2 climbOverPosition;
+    private bool dashRequested = false;
+    private bool canStartDash = false;
+    // Grab
     private bool canGrabLedge = true;
     private bool canClimb;
-    private bool doneGrab = false;
-    // private bool isGrabbing = false;
+
+    private Vector2 climbBegunPosition;
+    private Vector2 climbOverPosition;
+
     private void Awake()
     {
         instance = this;
-
         rb = GetComponent<Rigidbody2D>();
-
-       
+        // ensure starting gravity is base
+        rb.gravityScale = baseGravityScale;
     }
+
     private void Update()
     {
-
-        ///<summary
-        ///Movement>
-        ///</summary>
-
-        float dir = 0f;
-        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
-        {
-            dir -= 1f;
-            OnPlayerMovement?.Invoke(this, EventArgs.Empty);
-        }
-        if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
-        {
-            dir += 1f;
-            OnPlayerMovement?.Invoke(this, EventArgs.Empty);
-        }
-        SetDirection(dir);
-        if (targetDir == 1)
-        {
-            Debug.Log("Looking Right");
-            playerDirGameObject.gameObject.transform.localScale = Vector3.right;
-        }else if (targetDir == -1)
-        {
-            Debug.Log("Looking Left");
-            playerDirGameObject.gameObject.transform.localScale = Vector3.left;
-        }
-        ///<summary
-        ///Jump
-        ///DoubleJump
-        ///Glide
-        ///</summary>
-
-        // --- ground check (Update ok) ---
-        if (groundCheck != null)
-        {
-            bool groundedNow = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
-            //  bool platformNow = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, ledgeLayer);
-            if (groundedNow)
-            {
-                isGrounded = true;
-                didDoubleJump = false;
-                coyoteTimer = coyoteTime; // reset coyote
-            }
-            else
-            {
-                // tick down coyote timer
-                coyoteTimer -= Time.deltaTime;
-                isGrounded = false;
-            }
-        }
-
-        if (Input.GetKeyDown(jumpKey))
-        {
-            jumpRequested = true;
-        }
-        HandleJumpHold(Input.GetKey(jumpKey));
-
-
-        ///<summary>
-        ///Dash
-        ///</summary>
-
-        cooldownTimer -= Time.deltaTime;
-        if (isDashing)
-        {
-            dashTimer -= Time.deltaTime;
-            if (dashTimer <= 0f) EndDash();
-
-        }
-        if (Input.GetKeyDown(KeyCode.LeftShift))
-        {
-            dashRequested = true;
-        }
-        ///<summary>
-        ///Grab
-        ///</summary>
-        ///
-        Debug.Log(ledgeDetected);
+        HandleInput();
+        GroundCheck();
+        HandleDashTimers();
         CheckForLedge();
-        LedgeClimbOver();
+        //LedgeClimbOver();
     }
+
     private void FixedUpdate()
     {
-        //Movement
-        PlayerMovement();
+        ApplyGravityScale();
 
-        //Jump,DoubleJump,Glide
-        if (jumpRequested)
-        {
-            TryStartJump();
-            jumpRequested = false;
-        }
-        if (jumpReleasedSoon)
-        {
-            rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y * variableJumpMultiplier);
 
-            jumpReleasedSoon = false;
-        }
+        HandleMovement();
 
-        //Dash
-        if (dashRequested)
-        {
-            TryDash();
-            dashRequested = false;
-        }
+        HandleJump();
 
-        // Glide
-        if (isGliding) rb.gravityScale = glideGravityScale;
+        HandleDashPhysics();
+
+        HandleGlideGravity();
+
+        HandleGrabDirection();
     }
 
-    private void OnDrawGizmos()
+    // -------------------------------
+    // INPUT HANDLING
+    // -------------------------------
+    private void HandleInput()
     {
-        //jump
-        if (groundCheck != null)
+        float dir = 0f;
+        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) dir -= 1f;
+        if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow)) dir += 1f;
+        SetDirection(dir);
+
+        if (Mathf.Abs(dir) > 0.01f)
+            OnPlayerMove?.Invoke(this, EventArgs.Empty);
+
+        if (Input.GetKeyDown(KeyCode.Space))
         {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
+            jumpRequested = true;
+
+
+
         }
 
+        if (didDoubleJump)
+            OnPlayerDoubleJump?.Invoke(this, EventArgs.Empty);
+
+        if (Input.GetKeyDown(KeyCode.LeftShift))
+            dashRequested = true;
+
+        HandleJumpHold(Input.GetKey(KeyCode.Space));
     }
-    public float GetDirection()
+
+    // -------------------------------
+    // MOVEMENT
+    // -------------------------------
+    private void HandleMovement()
     {
-        return targetDir;
-    }
-    //Movement Methods
-    private void SetDirection(float dir)
-    {
-        targetDir = Mathf.Clamp(dir, -1f, 1f);
-    }
-    private void PlayerMovement()
-    {
+        if (isDashing) return;
 
         Vector2 v = rb.velocity;
         float targetX = targetDir * moveSpeed;
         float delta = targetX - v.x;
         float accelRate = (Mathf.Abs(targetX) > 0.01f) ? accel : deccel;
         float change = Mathf.Sign(delta) * Mathf.Min(Mathf.Abs(delta), accelRate * Time.fixedDeltaTime);
+
         v.x += change;
         rb.velocity = v;
     }
 
-    //Jumping Methods
-    private void TryStartJump()
+    private void SetDirection(float dir)
     {
-        if (coyoteTimer > 0f || isGrounded)
+        targetDir = Mathf.Clamp(dir, -1f, 1f);
+    }
+
+    public bool GetIsGliding() => isGliding;
+    public bool GetIsDashing() => isDashing;
+    public bool GetIsGrabbing() => canClimb;
+    public bool GetIsGrounded() => isGrounded;
+    public float GetDirection() => targetDir;
+    public float GetVelocityY() => rb.velocity.y;
+    public float GetVelocityX() => rb.velocity.x;
+
+    // -------------------------------
+    // GROUND CHECK
+    // -------------------------------
+    private void GroundCheck()
+    {
+        if (!groundCheck) return;
+        bool groundedNow = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
+
+        if (groundedNow)
         {
-            DoJump();
-            coyoteTimer = 0f;
+            isGrounded = true;
+            didDoubleJump = false;
+            coyoteTimer = coyoteTime;
         }
-        else if (!didDoubleJump && canDoubleJump)
+        else
         {
-            DoJump();
-            didDoubleJump = true;
+            isGrounded = false;
+            coyoteTimer -= Time.deltaTime;
         }
     }
+
+    // -------------------------------
+    // JUMP
+    // -------------------------------
+    private void HandleJump()
+    {
+        if (jumpRequested)
+        {
+            if (coyoteTimer > 0f || isGrounded)
+            {
+                DoJump();
+                OnPlayerJump?.Invoke(this, EventArgs.Empty);
+            }
+            else if (!didDoubleJump && canDoubleJump)
+            {
+                DoJump();
+                didDoubleJump = true;
+
+            }
+            jumpRequested = false;
+        }
+
+        if (jumpReleasedEarly)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y * variableJumpMultiplier);
+            jumpReleasedEarly = false;
+        }
+    }
+
     private void DoJump()
     {
         rb.velocity = new Vector2(rb.velocity.x, 0f);
         rb.AddForce(Vector2.up * jumpImpulse, ForceMode2D.Impulse);
-        // reset hold timer when jump starts
         holdTimer = 0f;
-        // Exit Glide Mode
         isGliding = false;
         rb.gravityScale = baseGravityScale;
     }
+
+
     private void HandleJumpHold(bool holding)
     {
+        // Manage hold timer for variable jump — do not change gravity here
         if (holding)
         {
             holdTimer += Time.deltaTime;
-
-            if (holdTimer <= maxHoldTime)
-            {
-
-                //  rb.gravityScale = Mathf.Lerp(rb.gravityScale, 1.8f, 0.2f);
-                float targetGravity = Mathf.Lerp(baseGravityScale, baseGravityScale * 0.55f, 0.6f);
-                rb.gravityScale = Mathf.MoveTowards(rb.gravityScale, targetGravity, gravityChangeSpeed * Time.deltaTime);
-            }
+            if (holdTimer > maxHoldTime) holdTimer = maxHoldTime;
         }
         else
         {
             if (holdTimer > 0f && holdTimer < maxHoldTime)
-            {
-                jumpReleasedSoon = true;
+                jumpReleasedEarly = true;
 
-            }
             holdTimer = 0f;
-            // Reset Gravity if not Gliding
-            if (!isGliding) rb.gravityScale = baseGravityScale;
-
-            // if (!IsGliding()) rb.gravityScale = baseGravityScale;
         }
 
 
-
-        if (!isGrounded && rb.velocity.y < 0f && holding && Input.GetKey(jumpKey))
+        if (!isGrounded && rb.velocity.y < 0f && holding)
         {
-            isGliding = true;
-
-            Debug.Log("Player is Gliding");
-            //  rb.gravityScale = Mathf.MoveTowards(rb.gravityScale, glideGravityScale, gravityChangeSpeed * Time.deltaTime);
-
+            if (!isGliding)
+            {
+                isGliding = true;
+                OnPlayerGlideStart?.Invoke(this, EventArgs.Empty);
+            }
         }
         else
         {
-            if (isGliding && (isGrounded || !(holding)))
+            if (isGliding)
             {
                 isGliding = false;
-            }
-            if (!isGliding)
-            {
-                rb.gravityScale = Mathf.MoveTowards(rb.gravityScale, baseGravityScale, gravityChangeSpeed * Time.deltaTime);
+                OnPlayerGlideEnd?.Invoke(this, EventArgs.Empty);
             }
         }
-
     }
 
+    private void ApplyGravityScale()
+    {
 
 
-    //Dash Methods
+        // 2) If dashing, gravity should be 0 (dash controls movement)
+        if (isDashing)
+        {
+            if (rb.gravityScale != 0f) rb.gravityScale = 0f;
+            return;
+        }
+
+        // 3) If gliding, we want a fixed glide gravity (immediate)
+        if (isGliding)
+        {
+            if (rb.gravityScale != glideGravityScale) rb.gravityScale = glideGravityScale;
+            return;
+        }
+
+        // 4) Variable jump hold: when player is holding jump while going up, reduce gravity smoothly
+        // Only apply while ascending to extend jump arc
+        if (holdTimer > 0f && holdTimer <= maxHoldTime && rb.velocity.y > 0f)
+        {
+            float targetGravity = baseGravityScale * 0.55f; // or compute differently
+            rb.gravityScale = Mathf.MoveTowards(rb.gravityScale, targetGravity, gravityChangeSpeed * Time.fixedDeltaTime);
+            return;
+        }
+
+        // 5) Default: move gravity back to base smoothly
+        rb.gravityScale = Mathf.MoveTowards(rb.gravityScale, baseGravityScale, gravityChangeSpeed * Time.fixedDeltaTime);
+    }
+
+    private void HandleGlideGravity()
+    {
+        //if (isGliding)
+        //    rb.gravityScale = glideGravityScale;
+        //else
+        //    rb.gravityScale = Mathf.MoveTowards(rb.gravityScale, baseGravityScale, gravityChangeSpeed * Time.deltaTime);
+    }
+
+    // -------------------------------
+    // DASH
+    // -------------------------------
+    private void HandleDashTimers()
+    {
+        cooldownTimer -= Time.deltaTime;
+        if (isDashing)
+        {
+            dashTimer -= Time.deltaTime;
+            if (dashTimer <= 0f)
+                EndDash();
+        }
+
+        if (dashRequested)
+        {
+            TryDash();
+            dashRequested = false;
+
+        }
+    }
 
     private void TryDash()
     {
-        float direction = targetDir;
         if (cooldownTimer > 0f || isDashing) return;
-        if (Mathf.Abs(direction) < 0.1f) return;
+        if (Mathf.Abs(targetDir) < 0.1f) return;
 
-
-        StartDash(Mathf.Sign(direction));
+        canStartDash = true;
+        OnPlayerDash?.Invoke(this, EventArgs.Empty);
     }
 
-
-    private void StartDash(float dir)
+    private void StartDash()
     {
         isDashing = true;
         dashTimer = dashTime;
         cooldownTimer = dashCooldown;
-        rb.velocity = new Vector2(dir * dashForce, rb.velocity.y);
-
+        float dir = Mathf.Sign(targetDir);
+        //rb.gravityScale = 0f;
+        rb.velocity = new Vector2(dir * dashForce, 0f);
     }
-
 
     private void EndDash()
     {
         isDashing = false;
-        // resume normal physics; no-op
+        //rb.gravityScale = baseGravityScale;
     }
 
-    //Grab Methods
+    private void HandleDashPhysics()
+    {
+        if (canStartDash)
+        {
+            StartDash();
+            canStartDash = false;
+        }
+    }
 
+    // -------------------------------
+    // LEDGE GRAB
+    // -------------------------------
+
+    private void HandleGrabDirection()
+    {
+        if (targetDir == 1)
+        {
+            Debug.Log("Looking Right");
+            playerDirGameObject.transform.localScale = Vector3.right;
+        }
+        else if (targetDir == -1)
+        {
+            Debug.Log("Looking Left");
+            playerDirGameObject.transform.localScale = Vector3.left;
+        }
+    }
     private void CheckForLedge()
     {
         if ((ledgeDetected && canGrabLedge))
         {
-            //if (targetDir == 0) return;
-
+            //rb.gravityScale = baseGravityScale;
             canGrabLedge = false;
             isGliding = false;
-            rb.gravityScale = 0f;
+
             Vector2 ledgePosition = LedgeDetection.Instance.transform.position;
-            if (playerDirGameObject.transform.localScale== Vector3.right)
+            if (playerDirGameObject.transform.localScale == Vector3.right)
             {
                 climbBegunPosition = ledgePosition + offset1Right;
                 climbOverPosition = ledgePosition + offset2Right;
@@ -357,31 +392,42 @@ public class PlayerController : MonoBehaviour
                 climbBegunPosition = ledgePosition + offset1Left;
                 climbOverPosition = ledgePosition + offset2Left;
             }
-
             canClimb = true;
         }
+
         if (canClimb)
         {
+            rb.velocity = new Vector3(0, 0, 0);
             transform.position = climbBegunPosition;
-            rb.gravityScale = baseGravityScale;
-            doneGrab = true;
+
+            isGrounded = false;
+            isGliding = false;
+            isDashing = false;
+
+            //rb.gravityScale = baseGravityScale;
+            OnPlayerGrab?.Invoke(this, EventArgs.Empty);
+            //oneGrab = true;
         }
     }
-    //This Method Should Call In Last Frame Of Animation Grap By Event
-    private void LedgeClimbOver()
+    public void LedgeClimbOver()
     {
-        if ((doneGrab))
-        {
-            canClimb = false;
-            transform.position = climbOverPosition;
-            Invoke("AllowLedgeGrab", .1f);
-        }
-        if (!isGrounded)
-        {
-            doneGrab = false;
-        }
 
+        canClimb = false;
+        transform.position = climbOverPosition;
+        Invoke(nameof(AllowLedgeGrab), 0.1f);
+
+        Debug.Log("Trigger Animation");
 
     }
+
     private void AllowLedgeGrab() => canGrabLedge = true;
+
+    private void OnDrawGizmos()
+    {
+        if (groundCheck != null)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
+        }
+    }
 }
