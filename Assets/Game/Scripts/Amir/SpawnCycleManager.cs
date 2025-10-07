@@ -27,8 +27,8 @@ public class SpawnExclusionRule
 [System.Serializable]
 public class OccupancyExclusionRule
 {
-    public Transform sourceTransform;            // اگر این transform فعلاً اشغال باشه
-    public Transform[] excludeWhenOccupied;     // این transformها را از انتخاب حذف کن
+    public Transform sourceTransform;
+    public Transform[] excludeWhenOccupied;
 }
 
 public class SpawnCycleManager : MonoBehaviour
@@ -49,6 +49,7 @@ public class SpawnCycleManager : MonoBehaviour
     public bool useInitialOnlySpawnPoints = true;
 
     [Header("Pre-destroy warning")]
+    [Tooltip("How many seconds BEFORE the actual destroy the pre-destroy visual should run.")]
     public float preDestroyWarningTime = 2f;
 
     [Header("Exclusion rules (after an object was spawned at sourceTransform, exclude excludeNext for next spawn)")]
@@ -70,7 +71,7 @@ public class SpawnCycleManager : MonoBehaviour
     public float maxDestroyInterval = 6f;
     public float respawnDelay = 2f;
 
-    // internal
+    // internal state for active instances
     private class ActiveEntry
     {
         public GameObject obj;
@@ -81,11 +82,14 @@ public class SpawnCycleManager : MonoBehaviour
 
     void Start()
     {
-        if ((spawnGroups == null || spawnGroups.Length == 0) && (spawnPoints == null || spawnPoints.Length == 0) && (initialOnlySpawnPoints == null || initialOnlySpawnPoints.Length == 0))
+        if ((spawnGroups == null || spawnGroups.Length == 0)
+            && (spawnPoints == null || spawnPoints.Length == 0)
+            && (initialOnlySpawnPoints == null || initialOnlySpawnPoints.Length == 0))
         {
             Debug.LogError("[SpawnCycleManager] No spawn points/groups/initial-only points assigned!");
             return;
         }
+
         if (prefabs == null || prefabs.Length == 0)
         {
             Debug.LogError("[SpawnCycleManager] No prefabs assigned!");
@@ -96,7 +100,7 @@ public class SpawnCycleManager : MonoBehaviour
         StartCoroutine(CycleRoutine());
     }
 
-    // --- initial spawn (two) ---
+    // ---------- initial spawn ----------
     private void SpawnInitialTwo()
     {
         List<Transform> allTransforms = GatherAllSpawnTransforms();
@@ -104,7 +108,6 @@ public class SpawnCycleManager : MonoBehaviour
 
         List<Transform> chosen = new List<Transform>();
 
-        // use initialOnlySpawnPoints for the initial two if enabled
         if (useInitialOnlySpawnPoints && initialOnlySpawnPoints != null && initialOnlySpawnPoints.Length > 0)
         {
             List<Transform> initialValid = new List<Transform>();
@@ -118,7 +121,6 @@ public class SpawnCycleManager : MonoBehaviour
             }
         }
 
-        // fill the rest from global pool
         if (chosen.Count < 2)
         {
             List<Transform> available = new List<Transform>(allTransforms);
@@ -148,7 +150,7 @@ public class SpawnCycleManager : MonoBehaviour
         active.Add(new ActiveEntry { obj = go, spawnTransform = t, prefabUsed = prefab });
     }
 
-    // --- main loop ---
+    // ---------- main loop ----------
     private IEnumerator CycleRoutine()
     {
         yield return new WaitForSeconds(initialDelay);
@@ -159,45 +161,64 @@ public class SpawnCycleManager : MonoBehaviour
 
             float waitBeforeDestroy = UnityEngine.Random.Range(minDestroyInterval, maxDestroyInterval);
 
-            // wait until pre-destroy phase
+            // wait until pre-destroy should start
             float timeUntilPre = Mathf.Max(waitBeforeDestroy - preDestroyWarningTime, 0f);
             if (timeUntilPre > 0f) yield return new WaitForSeconds(timeUntilPre);
 
+            // select which active to destroy
             int chosenToDestroy = (active.Count == 1) ? 0 : UnityEngine.Random.Range(0, active.Count);
             ActiveEntry toDestroy = active[chosenToDestroy];
 
-            // pre-destroy hint
+            // START pre-destroy (begin continuous visual) - do NOT wait here
             if (toDestroy.obj != null)
             {
                 var sda = toDestroy.obj.GetComponent<SpawnDestroyAnimator>();
-                if (sda != null) yield return StartCoroutine(sda.PlayPreDestroy());
-                else if (preDestroyWarningTime > 0f) yield return StartCoroutine(PreDestroyFallbackPulse(toDestroy.obj, preDestroyWarningTime));
+                if (sda != null)
+                {
+                    sda.BeginPreDestroy(); // start continuous pre-destroy visual (looping)
+                }
+                else
+                {
+                    // if no SpawnDestroyAnimator, use local pulse coroutine (non-blocking)
+                    // start a coroutine that pulses until we stop it right before destruction
+                    StartCoroutine(LocalBeginPreDestroyFallback(toDestroy.obj));
+                }
             }
 
-            // extra remainder wait if any
-            float extraWait = (waitBeforeDestroy - preDestroyWarningTime);
-            if (extraWait > 0f) yield return new WaitForSeconds(extraWait);
+            // wait remaining time until actual destroy
+            float remaining = waitBeforeDestroy - timeUntilPre;
+            if (remaining > 0f) yield return new WaitForSeconds(remaining);
 
-            // actual destroy
+            // NOW cut pre-destroy visual and play destroy animation (wait for it)
             if (toDestroy.obj != null)
             {
                 var sda2 = toDestroy.obj.GetComponent<SpawnDestroyAnimator>();
-                if (sda2 != null) { yield return StartCoroutine(sda2.PlayDestroy()); Destroy(toDestroy.obj); }
-                else { yield return StartCoroutine(SimpleScaleOut(toDestroy.obj, 0.28f)); Destroy(toDestroy.obj); }
+                if (sda2 != null)
+                {
+                    // stop the continuous visual then run destroy animation (PlayDestroy waits)
+                    sda2.EndPreDestroy();
+                    yield return StartCoroutine(sda2.PlayDestroy());
+                    Destroy(toDestroy.obj);
+                }
+                else
+                {
+                    // stop local fallback pulse
+                    yield return StartCoroutine(LocalEndPreDestroyFallbackAndDestroy(toDestroy.obj, 0.28f));
+                }
             }
 
-            // remember the transform that was just freed
+            // remember transform freed
             Transform justFreed = toDestroy.spawnTransform;
             active.RemoveAt(chosenToDestroy);
 
             // wait before respawn
             yield return new WaitForSeconds(respawnDelay);
 
-            // choose spawn while considering exclusion rules & occupancy rules
+            // choose next spawn transform (may involve waiting if policy=WaitForFree)
             Transform chosenSpawn = null;
             yield return StartCoroutine(ChooseSpawnTransformAfterDestroyCoroutine(toDestroy.prefabUsed, justFreed, (t) => chosenSpawn = t));
 
-            // instantiate new object at chosenSpawn
+            // spawn new object there
             GameObject prefabToSpawn = prefabs[UnityEngine.Random.Range(0, prefabs.Length)];
             GameObject newGo = Instantiate(prefabToSpawn, chosenSpawn.position, chosenSpawn.rotation);
             var animComp = newGo.GetComponent<SpawnDestroyAnimator>();
@@ -207,18 +228,9 @@ public class SpawnCycleManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Coroutine that picks a spawn transform according to:
-    /// - prefab rules / groups / spawnPoints
-    /// - temporary exclusion for the transform that was just freed
-    /// - exclusionRules (based on sourceTransform)
-    /// - occupancyExclusions (based on currently occupied transforms)
-    /// - policies: PickAny, AllowExcluded, WaitForFree (with timeout)
-    /// Calls onChosen(transform) when selection is ready.
-    /// </summary>
+    // ---------- Choose spawn coroutine (same logic as قبلی, but coroutine for WaitForFree) ----------
     private IEnumerator ChooseSpawnTransformAfterDestroyCoroutine(GameObject destroyedPrefab, Transform excludeTransform, Action<Transform> onChosen)
     {
-        // 1) build candidate list
         List<Transform> candidates = new List<Transform>();
 
         PrefabSpawnRule matchedPrefabRule = null;
@@ -268,11 +280,10 @@ public class SpawnCycleManager : MonoBehaviour
             yield break;
         }
 
-        // 2) build exclusion set (excludeTransform + exclusionRules[source] + occupancyExclusions based on current active)
+        // build exclusion set: excludeTransform + exclusionRules[source] + occupancyExclusions (current)
         HashSet<Transform> excluded = new HashSet<Transform>();
         if (excludeTransform != null) excluded.Add(excludeTransform);
 
-        // exclusionRules for source transform
         if (exclusionRules != null && exclusionRules.Length > 0 && excludeTransform != null)
         {
             foreach (var rule in exclusionRules)
@@ -286,12 +297,10 @@ public class SpawnCycleManager : MonoBehaviour
             }
         }
 
-        // occupancyExclusions: if some sourceTransform is currently occupied, add its excludeWhenOccupied
         if (occupancyExclusions != null && occupancyExclusions.Length > 0)
         {
             HashSet<Transform> currentlyOccupied = new HashSet<Transform>();
-            foreach (var a in active)
-                if (a.spawnTransform != null) currentlyOccupied.Add(a.spawnTransform);
+            foreach (var a in active) if (a.spawnTransform != null) currentlyOccupied.Add(a.spawnTransform);
 
             foreach (var orule in occupancyExclusions)
             {
@@ -304,7 +313,7 @@ public class SpawnCycleManager : MonoBehaviour
             }
         }
 
-        // local function to compute free & not excluded
+        // helper lambdas
         Func<List<Transform>> computeFreeAndNotExcluded = () =>
         {
             List<Transform> outList = new List<Transform>();
@@ -318,7 +327,6 @@ public class SpawnCycleManager : MonoBehaviour
             return outList;
         };
 
-        // local compute freeAny
         Func<List<Transform>> computeFreeAny = () =>
         {
             List<Transform> outList = new List<Transform>();
@@ -331,7 +339,7 @@ public class SpawnCycleManager : MonoBehaviour
             return outList;
         };
 
-        // 3) Try immediate selection: free & not excluded
+        // try immediate selection
         List<Transform> freeNotExcluded = computeFreeAndNotExcluded();
         if (freeNotExcluded.Count > 0)
         {
@@ -339,12 +347,9 @@ public class SpawnCycleManager : MonoBehaviour
             yield break;
         }
 
-        // 4) If none, compute freeAny
         List<Transform> freeAny = computeFreeAny();
         if (freeAny.Count > 0)
         {
-            // If policy == WaitForFree, and the reason there was no freeNotExcluded is that all freeAny are excluded,
-            // then we may wait for one of excluded to become free & non-excluded (or timeout)
             if (noCandidatePolicy == NoCandidatePolicy.WaitForFree)
             {
                 float start = Time.time;
@@ -353,8 +358,7 @@ public class SpawnCycleManager : MonoBehaviour
 
                 while (true)
                 {
-                    // recompute excluded dynamic part that depends on currently occupied (occupancyExclusions)
-                    // rebuild excluded set partially (source exclude + exclusionRules + occupancyExclusions)
+                    // recompute dynamic exclusions from occupancy rules
                     excluded.Clear();
                     if (excludeTransform != null) excluded.Add(excludeTransform);
                     if (exclusionRules != null && exclusionRules.Length > 0 && excludeTransform != null)
@@ -393,21 +397,17 @@ public class SpawnCycleManager : MonoBehaviour
                     }
 
                     if (!infinite && Time.time - start > waitForFreeTimeout)
-                    {
-                        // timeout -> break to fallback behaviour
                         break;
-                    }
 
                     yield return new WaitForSeconds(pollInterval);
                 }
             }
-            // if we get here, either policy is not WaitForFree or WaitForFree timed out; fall through
+            // else fall through to policy handling
         }
 
-        // 5) Policy handling
+        // policy handling
         if (noCandidatePolicy == NoCandidatePolicy.AllowExcluded)
         {
-            // pick any free (even if excluded)
             if (freeAny.Count > 0)
             {
                 onChosen(freeAny[UnityEngine.Random.Range(0, freeAny.Count)]);
@@ -417,17 +417,16 @@ public class SpawnCycleManager : MonoBehaviour
 
         if (noCandidatePolicy == NoCandidatePolicy.PickAny || (noCandidatePolicy == NoCandidatePolicy.AllowExcluded && freeAny.Count == 0))
         {
-            // fallback: pick any candidate (even if occupied/excluded) to avoid deadlock
             onChosen(candidates[UnityEngine.Random.Range(0, candidates.Count)]);
             yield break;
         }
 
-        // fallback default
+        // fallback
         onChosen(candidates[UnityEngine.Random.Range(0, candidates.Count)]);
         yield break;
     }
 
-    // Helpers: gather transforms, random fallback, simple scale anims and pre-destroy pulse
+    // ---------- helpers ----------
     private List<Transform> GatherAllSpawnTransforms()
     {
         List<Transform> all = new List<Transform>();
@@ -441,7 +440,6 @@ public class SpawnCycleManager : MonoBehaviour
         if (all.Count == 0 && spawnPoints != null)
             foreach (var t in spawnPoints) if (t != null && !all.Contains(t)) all.Add(t);
 
-        // include initial-only points so they are part of the normal pool after first spawn
         if (initialOnlySpawnPoints != null)
             foreach (var t in initialOnlySpawnPoints) if (t != null && !all.Contains(t)) all.Add(t);
 
@@ -486,20 +484,69 @@ public class SpawnCycleManager : MonoBehaviour
         go.transform.localScale = Vector3.zero;
     }
 
-    private IEnumerator PreDestroyFallbackPulse(GameObject go, float duration)
+    // ---------- local fallback pre-destroy: non-blocking start ----------
+    private Dictionary<GameObject, Coroutine> localPreDestroyCoros = new Dictionary<GameObject, Coroutine>();
+
+    private IEnumerator LocalBeginPreDestroyCoroutine(GameObject go, float durationInfiniteFlag)
     {
-        if (go == null || duration <= 0f) yield break;
+        // continuous pulse until explicitly stopped by LocalEndPreDestroyFallbackAndDestroy
         Vector3 baseScale = go.transform.localScale;
+        Vector3 basePos = go.transform.localPosition;
         float elapsed = 0f;
         float pulseRate = 6f;
         float pulseAmount = 0.08f;
-        while (elapsed < duration)
+        float shakeAmount = 0.06f;
+
+        while (true)
         {
             elapsed += Time.deltaTime;
-            float phase = Mathf.Sin(elapsed * pulseRate * Mathf.PI * 2f) * pulseAmount;
-            go.transform.localScale = baseScale * (1f + phase);
+            float phase = Mathf.Sin(elapsed * pulseRate * Mathf.PI * 2f);
+            float scaleOffset = phase * pulseAmount;
+            go.transform.localScale = baseScale * (1f + scaleOffset);
+
+            float shake = (Mathf.PerlinNoise(Time.time * 8f, 0f) * 2f - 1f);
+            go.transform.localPosition = basePos + Vector3.up * (shake * shakeAmount);
+
             yield return null;
         }
-        go.transform.localScale = baseScale;
+    }
+
+    private IEnumerator LocalBeginPreDestroyFallback(GameObject go)
+    {
+        if (go == null) yield break;
+        if (localPreDestroyCoros.ContainsKey(go)) yield break; // already running
+
+        Coroutine c = StartCoroutine(LocalBeginPreDestroyCoroutine(go, 0f));
+        localPreDestroyCoros[go] = c;
+        yield break;
+    }
+
+    private IEnumerator LocalEndPreDestroyFallbackAndDestroy(GameObject go, float destroyScaleDur)
+    {
+        if (go == null) yield break;
+
+        // stop local pre-destroy coroutine if exists
+        if (localPreDestroyCoros.ContainsKey(go))
+        {
+            StopCoroutine(localPreDestroyCoros[go]);
+            localPreDestroyCoros.Remove(go);
+        }
+
+        // optional short wait (give a small gap to restore transform if needed)
+        yield return null;
+
+        // then destroy with scale out
+        yield return StartCoroutine(SimpleScaleOut(go, destroyScaleDur));
+        Destroy(go);
+    }
+
+    // Public utility: reset active list (if needed in debug)
+    [ContextMenu("Clear Active (editor only)")]
+    public void ClearActiveForEditor()
+    {
+#if UNITY_EDITOR
+        active.Clear();
+        Debug.Log("[SpawnCycleManager] active cleared (editor).");
+#endif
     }
 }

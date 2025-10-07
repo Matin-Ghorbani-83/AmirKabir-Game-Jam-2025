@@ -290,6 +290,67 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
+--- !u!1 &918601760
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 918601762}
+  - component: {fileID: 918601761}
+  m_Layer: 0
+  m_Name: Right Enemy Spawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 3936346786652291628, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &918601761
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 918601760}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecb721f521f583143a6ac5eb91140449, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enemyMode: 0
+  topBound: {fileID: 1352102512}
+  downBound: {fileID: 1386757382}
+  minimumCount: 1
+  maximumCount: 3
+  maxSpawnTime: 4
+  minSpawnTime: 2
+  spawnJitterPositive: 2
+  spawnJitterNegative: -2
+  minDistanceBetweenEnemies: 1.2
+  enemyType: 0
+  spawnPointType: 0
+  enemyMovementType: 2
+  randomEnemySpawning: 1
+  randomEnemyMovement: 1
+  randomEnemySpawnLocation: 1
+  enemyRadius: 0.5
+--- !u!4 &918601762
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 918601760}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 9.41, y: 0.05, z: 0.028137762}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1264983177
 GameObject:
   m_ObjectHideFlags: 0
@@ -333,7 +394,7 @@ MonoBehaviour:
   - {fileID: 1386757382}
   - {fileID: 527813965}
   useInitialOnlySpawnPoints: 1
-  preDestroyWarningTime: 1
+  preDestroyWarningTime: 2
   exclusionRules: []
   occupancyExclusions:
   - sourceTransform: {fileID: 1386757382}
@@ -472,3 +533,4 @@ SceneRoots:
   - {fileID: 527813965}
   - {fileID: 1532358708}
   - {fileID: 1352102512}
+  - {fileID: 918601762}

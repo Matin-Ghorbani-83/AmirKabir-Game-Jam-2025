@@ -2,11 +2,13 @@
 using UnityEngine;
 
 /// <summary>
-/// Attach to prefab. Does:
-/// - PlaySpawn() : trigger "Spawn" or fallback scale-in.
-/// - PlayPreDestroy() : trigger "PreDestroy" (or fallback small shake/scale pulse) and wait until finished.
-/// - PlayDestroy() : trigger "Destroy" or fallback scale-out.
-/// This version NEVER changes colors; all visual hints should be done in Animator states.
+/// Attach to prefab. Supports:
+/// - PlaySpawn() : trigger "Spawn" or fallback single scale-in (same as before).
+/// - BeginPreDestroy() : start a continuous pre-destroy visual (Animator trigger or fallback looping pulse/shake).
+/// - EndPreDestroy() : stop the continuous pre-destroy visual (restore original transform).
+/// - PlayDestroy() : trigger "Destroy" and wait for its completion (or fallback scale-out).
+/// 
+/// Important: BeginPreDestroy does NOT wait; it begins the visual. Call EndPreDestroy before PlayDestroy to stop it.
 /// </summary>
 public class SpawnDestroyAnimator : MonoBehaviour
 {
@@ -15,20 +17,27 @@ public class SpawnDestroyAnimator : MonoBehaviour
     public string spawnTrigger = "Spawn";
     public string preDestroyTrigger = "PreDestroy";
     public string destroyTrigger = "Destroy";
-    public string spawnStateName = "SpawnState";
-    public string preDestroyStateName = "PreDestroyState";
-    public string destroyStateName = "DestroyState";
+    public string spawnStateName = "SpawnState";      // used by PlaySpawn when waitForAnimator = true
+    public string destroyStateName = "DestroyState";  // used by PlayDestroy when waitForAnimator = true
     public int animatorLayer = 0;
-    public bool waitForAnimator = true;
+    public bool waitForAnimator = true;      // only used by PlaySpawn / PlayDestroy to wait for animator states
+    public float maxWaitTimeForAnimator = 4f;
 
-    [Header("Fallback timings (when no Animator or can't detect states)")]
+    [Header("Fallback scale/pulse settings (no color changes)")]
     public float spawnScaleDuration = 0.28f;
-    public float preDestroyFallbackDuration = 2f; // default 2s warning
     public float destroyScaleDuration = 0.28f;
     public AnimationCurve scaleCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
-    [Header("Safety")]
-    public float maxWaitTimeForAnimator = 4f;
+    [Header("Fallback pre-destroy loop (when no Animator)")]
+    public float preDestroyPulseRate = 6f;    // oscillations per second
+    public float preDestroyPulseAmount = 0.08f; // relative scale amount
+    public float preDestroyShakeAmount = 0.06f; // optional position shake amplitude
+
+    // internal
+    private Coroutine preDestroyLoopCoroutine = null;
+    private Vector3 savedLocalScale;
+    private Vector3 savedLocalPosition;
+    private bool hasSavedTransform = false;
 
     void Reset()
     {
@@ -40,8 +49,16 @@ public class SpawnDestroyAnimator : MonoBehaviour
         if (animator == null) animator = GetComponent<Animator>();
     }
 
+    #region Spawn / Destroy (existing behavior)
     public IEnumerator PlaySpawn()
     {
+        if (!hasSavedTransform)
+        {
+            savedLocalScale = transform.localScale;
+            savedLocalPosition = transform.localPosition;
+            hasSavedTransform = true;
+        }
+
         if (animator != null && waitForAnimator && !string.IsNullOrEmpty(spawnStateName))
         {
             animator.ResetTrigger(destroyTrigger);
@@ -56,7 +73,6 @@ public class SpawnDestroyAnimator : MonoBehaviour
                 timer += Time.deltaTime;
                 yield return null;
             }
-
             if (!entered) { yield return new WaitForSeconds(Mathf.Min(spawnScaleDuration, maxWaitTimeForAnimator)); yield break; }
 
             timer = 0f;
@@ -74,51 +90,9 @@ public class SpawnDestroyAnimator : MonoBehaviour
         yield return StartCoroutine(ScaleInFallback());
     }
 
-    // NEW: Pre-destroy visual hint. Waits until pre-destroy animation/state ends (or fallback duration)
-    public IEnumerator PlayPreDestroy()
-    {
-        if (animator != null && waitForAnimator && !string.IsNullOrEmpty(preDestroyStateName))
-        {
-            animator.ResetTrigger(spawnTrigger);
-            animator.SetTrigger(preDestroyTrigger);
-
-            float timer = 0f;
-            bool entered = false;
-            while (timer < maxWaitTimeForAnimator)
-            {
-                var info = animator.GetCurrentAnimatorStateInfo(animatorLayer);
-                if (IsStateMatch(info, preDestroyStateName)) { entered = true; break; }
-                timer += Time.deltaTime;
-                yield return null;
-            }
-
-            if (!entered)
-            {
-                // fallback wait short time rather than blocking forever
-                float fallback = Mathf.Min(preDestroyFallbackDuration, maxWaitTimeForAnimator);
-                yield return new WaitForSeconds(fallback);
-                yield break;
-            }
-
-            timer = 0f;
-            while (timer < maxWaitTimeForAnimator)
-            {
-                var info = animator.GetCurrentAnimatorStateInfo(animatorLayer);
-                if (!IsStateMatch(info, preDestroyStateName)) yield break;
-                if (info.normalizedTime >= 1f) yield break;
-                timer += Time.deltaTime;
-                yield return null;
-            }
-
-            yield break;
-        }
-
-        // Fallback: a simple pulse/shake effect implemented via coroutine (scale pulse)
-        yield return StartCoroutine(PreDestroyFallbackPulse(preDestroyFallbackDuration));
-    }
-
     public IEnumerator PlayDestroy()
     {
+        // Ensure pre-destroy loop has been stopped by caller (EndPreDestroy) if using fallback.
         if (animator != null && waitForAnimator && !string.IsNullOrEmpty(destroyStateName))
         {
             animator.ResetTrigger(preDestroyTrigger);
@@ -133,7 +107,6 @@ public class SpawnDestroyAnimator : MonoBehaviour
                 timer += Time.deltaTime;
                 yield return null;
             }
-
             if (!entered) { yield return new WaitForSeconds(Mathf.Min(destroyScaleDuration, maxWaitTimeForAnimator)); yield break; }
 
             timer = 0f;
@@ -145,13 +118,93 @@ public class SpawnDestroyAnimator : MonoBehaviour
                 timer += Time.deltaTime;
                 yield return null;
             }
-
             yield break;
         }
 
         yield return StartCoroutine(ScaleOutFallback());
     }
+    #endregion
 
+    #region Pre-destroy begin / end (new)
+    /// <summary>
+    /// Start a continuous pre-destroy visual.
+    /// - If Animator exists: sets preDestroyTrigger (does NOT wait).
+    /// - Else: starts a looping scale+optional shake coroutine until EndPreDestroy() is called.
+    /// </summary>
+    public void BeginPreDestroy()
+    {
+        if (!hasSavedTransform)
+        {
+            savedLocalScale = transform.localScale;
+            savedLocalPosition = transform.localPosition;
+            hasSavedTransform = true;
+        }
+
+        if (animator != null)
+        {
+            // Just fire the trigger; animator should transition into a looping pre-destroy state if you set it up.
+            animator.ResetTrigger(destroyTrigger);
+            animator.SetTrigger(preDestroyTrigger);
+            // Do not wait here — the animator should visually loop until Destroy is triggered.
+            return;
+        }
+
+        // fallback: start continuous pulse/shake
+        if (preDestroyLoopCoroutine == null)
+            preDestroyLoopCoroutine = StartCoroutine(PreDestroyLoopCoroutine());
+    }
+
+    /// <summary>
+    /// Stop the continuous pre-destroy visual and restore transform.
+    /// Call this before PlayDestroy() if you want fallback visuals to cease.
+    /// </summary>
+    public void EndPreDestroy()
+    {
+        if (animator != null)
+        {
+            // Optionally reset preDestroy trigger so animator transitions elsewhere on Destroy
+            animator.ResetTrigger(preDestroyTrigger);
+            return;
+        }
+
+        if (preDestroyLoopCoroutine != null)
+        {
+            StopCoroutine(preDestroyLoopCoroutine);
+            preDestroyLoopCoroutine = null;
+        }
+
+        // restore original transform values (in case pulse/shake modified them)
+        if (hasSavedTransform)
+        {
+            transform.localScale = savedLocalScale;
+            transform.localPosition = savedLocalPosition;
+        }
+    }
+
+    private IEnumerator PreDestroyLoopCoroutine()
+    {
+        // continuous oscillation until stopped
+        Vector3 baseScale = transform.localScale;
+        Vector3 basePos = transform.localPosition;
+        float elapsed = 0f;
+
+        while (true)
+        {
+            elapsed += Time.deltaTime;
+            float phase = Mathf.Sin(elapsed * preDestroyPulseRate * Mathf.PI * 2f);
+            float scaleOffset = phase * preDestroyPulseAmount;
+            transform.localScale = baseScale * (1f + scaleOffset);
+
+            // gentle positional shake (optional)
+            float shake = Mathf.PerlinNoise(Time.time * 8f, 0f) * 2f - 1f; // -1..1
+            transform.localPosition = basePos + Vector3.up * (shake * preDestroyShakeAmount);
+
+            yield return null;
+        }
+    }
+    #endregion
+
+    #region Fallback helpers
     private IEnumerator ScaleInFallback()
     {
         Vector3 target = transform.localScale;
@@ -181,29 +234,8 @@ public class SpawnDestroyAnimator : MonoBehaviour
         }
         transform.localScale = Vector3.zero;
     }
+    #endregion
 
-    // A gentle pulse for the warning phase (no color changes). Scales slightly up/down to indicate "about to die".
-    private IEnumerator PreDestroyFallbackPulse(float duration)
-    {
-        if (duration <= 0f) yield break;
-        Vector3 baseScale = transform.localScale;
-        float elapsed = 0f;
-        float pulseRate = 6f; // how many oscillations per second (feel free to tweak)
-        float pulseAmount = 0.08f; // relative scale amount
-
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            float phase = Mathf.Sin(elapsed * pulseRate * Mathf.PI * 2f) * pulseAmount;
-            transform.localScale = baseScale * (1f + phase);
-            yield return null;
-        }
-
-        // restore original scale
-        transform.localScale = baseScale;
-    }
-
-    // utility: checks if AnimatorStateInfo corresponds to provided state name
     private bool IsStateMatch(AnimatorStateInfo info, string stateName)
     {
         if (string.IsNullOrEmpty(stateName)) return false;
