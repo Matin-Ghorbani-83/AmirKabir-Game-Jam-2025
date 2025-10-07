@@ -33,6 +33,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float dashTime = 0.18f;
     [SerializeField] private float dashCooldown = 0.8f;
 
+    [Header("Glie")]
+    [SerializeField] private float glideSpeed = 3f;
+
     [Header("Grab")]
     [SerializeField] private Vector2 offset1Right;
 
@@ -48,6 +51,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float coyoteTime = 0.12f;
 
     private Rigidbody2D rb;
+    private float currentSpeed;
 
     // Direction
     private float targetDir = 0f;
@@ -68,6 +72,7 @@ public class PlayerController : MonoBehaviour
     private float cooldownTimer = 0f;
     private bool dashRequested = false;
     private bool canStartDash = false;
+    private bool didDashOnAire = false;
     // Grab
     private bool canGrabLedge = true;
     private bool canClimb;
@@ -81,6 +86,7 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         // ensure starting gravity is base
         rb.gravityScale = baseGravityScale;
+        currentSpeed = moveSpeed;
     }
 
     private void Update()
@@ -144,9 +150,9 @@ public class PlayerController : MonoBehaviour
     private void HandleMovement()
     {
         if (isDashing) return;
-
+        if (!isGliding) currentSpeed = moveSpeed;
         Vector2 v = rb.velocity;
-        float targetX = targetDir * moveSpeed;
+        float targetX = targetDir * currentSpeed;
         float delta = targetX - v.x;
         float accelRate = (Mathf.Abs(targetX) > 0.01f) ? accel : deccel;
         float change = Mathf.Sign(delta) * Mathf.Min(Mathf.Abs(delta), accelRate * Time.fixedDeltaTime);
@@ -181,11 +187,18 @@ public class PlayerController : MonoBehaviour
             isGrounded = true;
             didDoubleJump = false;
             coyoteTimer = coyoteTime;
+            didDashOnAire = false;
         }
         else
         {
             isGrounded = false;
             coyoteTimer -= Time.deltaTime;
+
+            if (isDashing)
+            {
+                didDashOnAire = true;
+            }
+
         }
     }
 
@@ -249,6 +262,7 @@ public class PlayerController : MonoBehaviour
             if (!isGliding)
             {
                 isGliding = true;
+                currentSpeed = glideSpeed;
                 OnPlayerGlideStart?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -256,7 +270,9 @@ public class PlayerController : MonoBehaviour
         {
             if (isGliding)
             {
+
                 isGliding = false;
+
                 OnPlayerGlideEnd?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -326,6 +342,7 @@ public class PlayerController : MonoBehaviour
     {
         if (cooldownTimer > 0f || isDashing) return;
         if (Mathf.Abs(targetDir) < 0.1f) return;
+        if (didDashOnAire) return;
 
         canStartDash = true;
         OnPlayerDash?.Invoke(this, EventArgs.Empty);
@@ -352,6 +369,7 @@ public class PlayerController : MonoBehaviour
         if (canStartDash)
         {
             StartDash();
+
             canStartDash = false;
         }
     }
@@ -364,12 +382,12 @@ public class PlayerController : MonoBehaviour
     {
         if (targetDir == 1)
         {
-            Debug.Log("Looking Right");
+            //Debug.Log("Looking Right");
             playerDirGameObject.transform.localScale = Vector3.right;
         }
         else if (targetDir == -1)
         {
-            Debug.Log("Looking Left");
+            //Debug.Log("Looking Left");
             playerDirGameObject.transform.localScale = Vector3.left;
         }
     }
@@ -416,7 +434,7 @@ public class PlayerController : MonoBehaviour
         transform.position = climbOverPosition;
         Invoke(nameof(AllowLedgeGrab), 0.1f);
 
-        Debug.Log("Trigger Animation");
+
 
     }
 
