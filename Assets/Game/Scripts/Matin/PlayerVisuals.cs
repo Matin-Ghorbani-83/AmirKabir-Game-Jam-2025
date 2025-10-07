@@ -33,7 +33,7 @@ public class PlayerVisuals : MonoBehaviour
     private void OnPlayerGrab(object sender, EventArgs e)
     {
         animator.SetTrigger("grabTrigger");
-        Debug.Log("Grab event Invoke");
+        
     }
 
     private void OnPlayerDash(object sender, EventArgs e)
@@ -100,8 +100,7 @@ public class PlayerVisuals : MonoBehaviour
         animator.SetFloat("velocityX", velocityX);
 
         isMoving = false;
-        if (isGrabbing)
-            Debug.Log("Grab" + isGrabbing);
+       
     }
 
     private void FlipPlayerSprite(float dir)
