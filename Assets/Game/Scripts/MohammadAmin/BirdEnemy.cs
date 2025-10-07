@@ -1,9 +1,13 @@
 using UnityEngine;
 using SimpleFactory;
+using System.Collections;
+using Unity.VisualScripting;
+using System;
 
 public class BirdEnemy : MonoBehaviour, IEnemy
 {
     const int ONE_HUNDRED = 100;
+    const float TIME = 1f;
 
     [Header("Choice Point Position")]
     public SpawnPointType spawnPointType;
@@ -21,15 +25,14 @@ public class BirdEnemy : MonoBehaviour, IEnemy
 
     bool right;
     bool top;
+    bool move = true;
+    bool once = true;
+    bool getOut = false;
+    bool startGetOut = false;
 
 
-    private void Start()
+    private void Awake()
     {
-        speed = sOEnemy.Speed;
-        knockbackForce = sOEnemy.KnockbackForce;
-
-        rb = GetComponent<Rigidbody2D>();
-
         if (transform.position.x <= 0)
             right = false;
         else
@@ -40,24 +43,70 @@ public class BirdEnemy : MonoBehaviour, IEnemy
         else
             top = true;
 
+
+        switch (spawnPointType)
+        {
+            case SpawnPointType.Side:
+                point.position = new Vector3(-8f + transform.position.x, 0f + transform.position.y, 0f);
+                break;
+            case SpawnPointType.Top:
+                point.position = new Vector3(-4f + transform.position.x, 0f + transform.position.y, 0f);
+                break;
+        }
+    }
+
+    private void Start()
+    {
+        speed = sOEnemy.Speed;
+        knockbackForce = sOEnemy.KnockbackForce;
+
+        rb = GetComponent<Rigidbody2D>();
+
         setRotationAndLocalScale();
     }
 
-    private void Update() => Movement(speed);
+    private void Update()
+    {
+        if (!getOut)
+        {
+            if (move)
+                Movement(speed);
+            else
+                rb.velocity = Vector3.zero;
+        }
+        else
+        {
+            if (right)
+            {
+                transform.position = Vector2.MoveTowards(transform.position, new Vector2(12f, -2f), speed * Time.deltaTime);
+                transform.rotation = Quaternion.Euler(0, 0, 180);
+            }
+            else
+            {
+                transform.position = Vector2.MoveTowards(transform.position, new Vector2(-12f, -2f), speed * Time.deltaTime);
+                if (transform.localScale.x > 0)
+                    transform.rotation = Quaternion.Euler(0, 0, 0);
+                else
+                    transform.rotation = Quaternion.Euler(0, 0, 180);
+            }
+        }
+
+        myDestroy();
+    }
 
     public void Movement(float iSpeed)
     {
-        normalMovement(iSpeed);
-
         switch (enemyMovementType)
         {
             case EnemyMovementType.Normal:
-                // null
+                normalMovement(iSpeed);
                 break;
             case EnemyMovementType.Fake:
+                normalMovement(iSpeed);
                 fakeMovement();
                 break;
             case EnemyMovementType.Redirect:
+                normalMovement(iSpeed);
                 redirectMovement(iSpeed);
                 break;
         }
@@ -70,17 +119,33 @@ public class BirdEnemy : MonoBehaviour, IEnemy
             case SpawnPointType.Side:
 
                 if (right)
+                {
+                    if (point.position.x <= 0 && once)
+                        StartCoroutine(idle());
                     rb.velocity = Vector2.left * iSpeed * ONE_HUNDRED * Time.deltaTime;
+                }
                 else
+                {
+                    if (point.position.x >= 0 && once)
+                        StartCoroutine(idle());
                     rb.velocity = Vector2.right * iSpeed * ONE_HUNDRED * Time.deltaTime;
+                }
 
                 break;
             case SpawnPointType.Top:
 
                 if (top)
+                {
+                    if (point.position.y <= 0 && once)
+                        StartCoroutine(idle());
                     rb.velocity = Vector2.down * iSpeed * ONE_HUNDRED * Time.deltaTime;
+                }
                 else
+                {
+                    if (point.position.y >= 0 && once)
+                        StartCoroutine(idle());
                     rb.velocity = Vector2.up * iSpeed * ONE_HUNDRED * Time.deltaTime;
+                }
 
                 break;
         }
@@ -123,9 +188,13 @@ public class BirdEnemy : MonoBehaviour, IEnemy
     }
     void fake()
     {
+        if (once)
+            StartCoroutine(idle());
         speed = -speed;
-        transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
+        Invoke("changeLocalScale", TIME);
     }
+
+    private void changeLocalScale() => transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
 
     void redirectMovement(float iSpeed)
     {
@@ -137,10 +206,91 @@ public class BirdEnemy : MonoBehaviour, IEnemy
                 {
                     if (point.position.x <= 0)
                     {
+                        if (once)
+                            StartCoroutine(idle());
+
                         if (top)
                             rb.velocity = new Vector2(-iSpeed, -iSpeed) * ONE_HUNDRED * Time.deltaTime;
                         else
                             rb.velocity = new Vector2(-iSpeed, iSpeed) * ONE_HUNDRED * Time.deltaTime;
+
+                        Invoke("changeRotation", TIME);
+                    }
+                }
+                else
+                {
+                    if (point.position.x >= 0)
+                    {
+                        if (once)
+                            StartCoroutine(idle());
+
+                        if (top)
+                            rb.velocity = new Vector2(iSpeed, -iSpeed) * ONE_HUNDRED * Time.deltaTime; 
+                        else
+                            rb.velocity = new Vector2(iSpeed, iSpeed) * ONE_HUNDRED * Time.deltaTime;
+
+                        Invoke("changeRotation", TIME);
+                    }
+                }
+
+                break;
+            case SpawnPointType.Top:
+
+                if (top)
+                {
+                    if (point.position.y <= 0)
+                    {
+                        if (once)
+                            StartCoroutine(idle());
+
+                        if (right)
+                            rb.velocity = new Vector2(-iSpeed, -iSpeed) * ONE_HUNDRED * Time.deltaTime;
+                        else
+                            rb.velocity = new Vector2(iSpeed, -iSpeed) * ONE_HUNDRED * Time.deltaTime;
+
+                        Invoke("changeRotation", TIME);
+                    }
+                }
+                else
+                {
+                    if (point.position.y >= 0)
+                    {
+                        if (once)
+                            StartCoroutine(idle());
+
+                        if (right)
+                            rb.velocity = new Vector2(-iSpeed, iSpeed) * ONE_HUNDRED * Time.deltaTime;
+                        else
+                            rb.velocity = new Vector2(iSpeed, iSpeed) * ONE_HUNDRED * Time.deltaTime;
+
+                        Invoke("changeRotation", TIME);
+                    }
+                }
+
+                break;
+        }
+    }
+
+    void changeRotation()
+    {
+        switch (spawnPointType)
+        {
+            case SpawnPointType.Side:
+
+                if (right)
+                {
+                    if (point.position.x <= 0)
+                    {
+                        if (top)
+                        {
+                            point.position = new Vector2(point.position.x - 50f, point.position.y);
+                            transform.rotation = Quaternion.Euler(transform.rotation.x, transform.rotation.y, 45f);
+                        }
+                        else
+                        {
+                            point.position = new Vector2(point.position.x - 50f, point.position.y);
+                            transform.rotation = Quaternion.Euler(transform.rotation.x, transform.rotation.y, -45f);
+                        }
                     }
                 }
                 else
@@ -148,9 +298,15 @@ public class BirdEnemy : MonoBehaviour, IEnemy
                     if (point.position.x >= 0)
                     {
                         if (top)
-                            rb.velocity = new Vector2(iSpeed, -iSpeed) * ONE_HUNDRED * Time.deltaTime;
+                        {
+                            point.position = new Vector2(point.position.x + 50f, point.position.y);
+                            transform.rotation = Quaternion.Euler(transform.rotation.x, transform.rotation.y, -45f);
+                        }
                         else
-                            rb.velocity = new Vector2(iSpeed, iSpeed) * ONE_HUNDRED * Time.deltaTime;
+                        {
+                            point.position = new Vector2(point.position.x + 50f, point.position.y);
+                            transform.rotation = Quaternion.Euler(transform.rotation.x, transform.rotation.y, 45f);
+                        }
                     }
                 }
 
@@ -162,9 +318,15 @@ public class BirdEnemy : MonoBehaviour, IEnemy
                     if (point.position.y <= 0)
                     {
                         if (right)
-                            rb.velocity = new Vector2(-iSpeed, -iSpeed) * ONE_HUNDRED * Time.deltaTime;
+                        {
+                            point.position = new Vector2(point.position.x + 50f, point.position.y);
+                            transform.rotation = Quaternion.Euler(transform.rotation.x, transform.rotation.y, 45f);
+                        }
                         else
-                            rb.velocity = new Vector2(iSpeed, -iSpeed) * ONE_HUNDRED * Time.deltaTime;
+                        {
+                            point.position = new Vector2(point.position.x - 50f, point.position.y);
+                            transform.rotation = Quaternion.Euler(transform.rotation.x, transform.rotation.y, 135f);
+                        }
                     }
                 }
                 else
@@ -172,9 +334,15 @@ public class BirdEnemy : MonoBehaviour, IEnemy
                     if (point.position.y >= 0)
                     {
                         if (right)
-                            rb.velocity = new Vector2(-iSpeed, iSpeed) * ONE_HUNDRED * Time.deltaTime;
+                        {
+                            point.position = new Vector2(point.position.x - 50f, point.position.y);
+                            transform.rotation = Quaternion.Euler(transform.rotation.x, transform.rotation.y, 45f);
+                        }
                         else
-                            rb.velocity = new Vector2(iSpeed, iSpeed) * ONE_HUNDRED * Time.deltaTime;
+                        {
+                            point.position = new Vector2(point.position.x - 50f, point.position.y);
+                            transform.rotation = Quaternion.Euler(transform.rotation.x, transform.rotation.y, -45f);
+                        }
                     }
                 }
 
@@ -213,9 +381,28 @@ public class BirdEnemy : MonoBehaviour, IEnemy
         }
     }
 
+    IEnumerator idle()
+    {
+        move = false;
+        once = false;
+        yield return new WaitForSeconds(TIME);
+        move = true;
+        speed *= 3;
+        if (startGetOut)
+        {
+            getOut = true;
+        }
+    }
+
     public void Attack()
     {
         // In "OnTriggerEnter2D" method \\
+    }
+
+    void myDestroy()
+    {
+        if (transform.position.x < -11 || transform.position.x > 11 || transform.position.y < -6 || transform.position.y > 6)
+            Destroy(gameObject);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -243,6 +430,12 @@ public class BirdEnemy : MonoBehaviour, IEnemy
 
                     break;
             }
+        }
+
+        if (collision.gameObject.CompareTag("Platform"))
+        {
+            once = true;
+            startGetOut = true;
         }
     }
 }
