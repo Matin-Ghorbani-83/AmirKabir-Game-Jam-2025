@@ -8,6 +8,7 @@ public enum EnemySpawnerMode
     side, top
 }
 
+// Ajab Roz Badi Bod Emroz
 public class EnemySpawner : MonoBehaviour
 {
     [Header("Spawner Type")]
