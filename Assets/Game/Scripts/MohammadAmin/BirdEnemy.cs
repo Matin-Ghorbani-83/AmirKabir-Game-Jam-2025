@@ -1,8 +1,6 @@
 using UnityEngine;
 using SimpleFactory;
 using System.Collections;
-using Unity.VisualScripting;
-using System;
 
 public class BirdEnemy : MonoBehaviour, IEnemy
 {
@@ -15,7 +13,7 @@ public class BirdEnemy : MonoBehaviour, IEnemy
     public EnemyMovementType enemyMovementType;
 
     [Space(height: 20f)]
-    [SerializeField] SOEnemy sOEnemy;
+    [SerializeField] SOBirdEnemy sOEnemy;
     [SerializeField] Transform point;
 
     float speed;
@@ -78,20 +76,19 @@ public class BirdEnemy : MonoBehaviour, IEnemy
         {
             if (right)
             {
-                transform.position = Vector2.MoveTowards(transform.position, new Vector2(12f, -2f), speed * Time.deltaTime);
+                // -2f ==> y position for exit enemy
+                transform.position = Vector2.MoveTowards(transform.position, new Vector2(12.5f, -2f), speed * Time.deltaTime);
                 transform.rotation = Quaternion.Euler(0, 0, 180);
             }
             else
             {
-                transform.position = Vector2.MoveTowards(transform.position, new Vector2(-12f, -2f), speed * Time.deltaTime);
+                transform.position = Vector2.MoveTowards(transform.position, new Vector2(-12.5f, -2f), speed * Time.deltaTime);
                 if (transform.localScale.x > 0)
                     transform.rotation = Quaternion.Euler(0, 0, 0);
                 else
                     transform.rotation = Quaternion.Euler(0, 0, 180);
             }
         }
-
-        myDestroy();
     }
 
     public void Movement(float iSpeed)
@@ -397,12 +394,6 @@ public class BirdEnemy : MonoBehaviour, IEnemy
     public void Attack()
     {
         // In "OnTriggerEnter2D" method \\
-    }
-
-    void myDestroy()
-    {
-        if (transform.position.x < -11 || transform.position.x > 11 || transform.position.y < -6 || transform.position.y > 6)
-            Destroy(gameObject);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
