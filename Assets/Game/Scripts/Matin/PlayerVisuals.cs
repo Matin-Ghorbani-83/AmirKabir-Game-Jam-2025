@@ -28,6 +28,18 @@ public class PlayerVisuals : MonoBehaviour
         controller.OnPlayerDoubleJump += OnPlayerDoubleJump;
         controller.OnPlayerDash += OnPlayerDash;
         controller.OnPlayerGrab += OnPlayerGrab;
+        controller.OnPlayerGlideStart += Controller_OnPlayerGlideStart;
+        controller.OnPlayerGlideEnd += Controller_OnPlayerGlideEnd;
+    }
+
+    private void Controller_OnPlayerGlideEnd(object sender, EventArgs e)
+    {
+        Debug.Log("Glide Enddddddd");
+    }
+
+    private void Controller_OnPlayerGlideStart(object sender, EventArgs e)
+    {
+        Debug.Log("Glide Staaaaart");
     }
 
     private void OnPlayerGrab(object sender, EventArgs e)
@@ -85,6 +97,7 @@ public class PlayerVisuals : MonoBehaviour
         if (controller.GetIsGrounded())
         {
             animator.ResetTrigger("doubleJumpTrigger");
+            animator.ResetTrigger("grabTrigger");
         }
 
         if (controller.GetIsGrabbing())

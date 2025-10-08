@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
@@ -26,6 +27,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float jumpImpulse = 10f;
     [SerializeField] private float variableJumpMultiplier = 0.6f;
     [SerializeField] private float maxHoldTime = 0.25f;
+
     [SerializeField] private float glideGravityScale = 0.1f;
 
     [Header("Dash")]
@@ -35,6 +37,8 @@ public class PlayerController : MonoBehaviour
 
     [Header("Glie")]
     [SerializeField] private float glideSpeed = 3f;
+    [SerializeField] private float glideDelay = 0.4f; 
+    private float glideHoldTimer = 0f;
 
     [Header("Grab")]
     [SerializeField] private Vector2 offset1Right;
@@ -57,11 +61,12 @@ public class PlayerController : MonoBehaviour
     private float targetDir = 0f;
 
     // Jump
+    private float holdTimer = 0f;
     private bool isGrounded;
     private bool canDoubleJump = true;
     private bool didDoubleJump;
     private bool jumpReleasedEarly;
-    private float holdTimer = 0f;
+
     private float coyoteTimer = 0f;
     private bool jumpRequested;
     private bool isGliding = false;
@@ -77,6 +82,9 @@ public class PlayerController : MonoBehaviour
     private bool canGrabLedge = true;
     private bool canClimb;
 
+    private Vector2 GrabPosition;
+    private Vector2 SwitchPosition;
+
     private Vector2 climbBegunPosition;
     private Vector2 climbOverPosition;
 
@@ -88,6 +96,14 @@ public class PlayerController : MonoBehaviour
         rb.gravityScale = baseGravityScale;
         currentSpeed = moveSpeed;
     }
+    private void Start()
+    {
+        //PlatformInfoDetector.Instance.OnGrabPointsCollected += HandleGrabPointsReceived;
+        //PlatformInfoDetector.Instance.OnTransformPlayerPointsCollected += HandleTransfromPointReceived;
+        PlatformInfoDetector.Instance.OnGrabPointsCollected += OnGrabPointsReceived;
+    }
+
+
 
     private void Update()
     {
@@ -109,7 +125,7 @@ public class PlayerController : MonoBehaviour
 
         HandleDashPhysics();
 
-        HandleGlideGravity();
+
 
         HandleGrabDirection();
     }
@@ -226,6 +242,7 @@ public class PlayerController : MonoBehaviour
         if (jumpReleasedEarly)
         {
             rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y * variableJumpMultiplier);
+            OnPlayerJump?.Invoke(this, EventArgs.Empty);
             jumpReleasedEarly = false;
         }
     }
@@ -242,7 +259,11 @@ public class PlayerController : MonoBehaviour
 
     private void HandleJumpHold(bool holding)
     {
-        // Manage hold timer for variable jump — do not change gravity here
+        if (holding && isGliding && isGrounded)
+        {
+            isGliding = false;
+        }
+
         if (holding)
         {
             holdTimer += Time.deltaTime;
@@ -254,29 +275,35 @@ public class PlayerController : MonoBehaviour
                 jumpReleasedEarly = true;
 
             holdTimer = 0f;
+            glideHoldTimer = 0f;
         }
 
 
         if (!isGrounded && rb.velocity.y < 0f && holding)
         {
-            if (!isGliding)
+            glideHoldTimer += Time.deltaTime;
+
+
+            if (!isGliding && glideHoldTimer >= glideDelay)
             {
                 isGliding = true;
                 currentSpeed = glideSpeed;
+                rb.gravityScale = glideGravityScale;
                 OnPlayerGlideStart?.Invoke(this, EventArgs.Empty);
             }
         }
         else
         {
-            if (isGliding)
+            if (isGliding || isGrounded)
             {
-
                 isGliding = false;
-
+                glideHoldTimer = 0f; 
+                rb.gravityScale = baseGravityScale;
                 OnPlayerGlideEnd?.Invoke(this, EventArgs.Empty);
             }
         }
     }
+
 
     private void ApplyGravityScale()
     {
@@ -309,13 +336,7 @@ public class PlayerController : MonoBehaviour
         rb.gravityScale = Mathf.MoveTowards(rb.gravityScale, baseGravityScale, gravityChangeSpeed * Time.fixedDeltaTime);
     }
 
-    private void HandleGlideGravity()
-    {
-        //if (isGliding)
-        //    rb.gravityScale = glideGravityScale;
-        //else
-        //    rb.gravityScale = Mathf.MoveTowards(rb.gravityScale, baseGravityScale, gravityChangeSpeed * Time.deltaTime);
-    }
+
 
     // -------------------------------
     // DASH
@@ -341,7 +362,7 @@ public class PlayerController : MonoBehaviour
     private void TryDash()
     {
         if (cooldownTimer > 0f || isDashing) return;
-        if (Mathf.Abs(targetDir) < 0.1f) return;
+        //  if (Mathf.Abs(targetDir) < 0.1f) return;
         if (didDashOnAire) return;
 
         canStartDash = true;
@@ -353,7 +374,7 @@ public class PlayerController : MonoBehaviour
         isDashing = true;
         dashTimer = dashTime;
         cooldownTimer = dashCooldown;
-        float dir = Mathf.Sign(targetDir);
+        float dir = playerDirGameObject.transform.localScale.x; //Mathf.Sign(targetDir);
         //rb.gravityScale = 0f;
         rb.velocity = new Vector2(dir * dashForce, 0f);
     }
@@ -378,6 +399,37 @@ public class PlayerController : MonoBehaviour
     // LEDGE GRAB
     // -------------------------------
 
+    private void OnGrabPointsReceived(List<GrabPointData> list)
+    {
+        Debug.Log($"[GrabSystem] Received {list.Count} grab points");
+
+        if (list == null || list.Count == 0) return;
+
+
+        bool facingRight = playerDirGameObject.transform.localScale.x > 0f;
+        GrabPosition desiredSide = facingRight ? global::GrabPosition.Right : global::GrabPosition.Left;
+
+
+        GrabPointData chosen = null;
+        foreach (var p in list)
+        {
+            if (p.side == desiredSide)
+            {
+                chosen = p;
+                break;
+            }
+        }
+
+
+        if (chosen == null) chosen = list[0];
+
+
+        GrabPosition = chosen.grabTransform.position;
+        SwitchPosition = chosen.switchTransform != null ? chosen.switchTransform.position : GrabPosition;
+
+        Debug.Log($"[GrabSystem] Facing: {desiredSide}  Selected Grab:{chosen.grabTransform.name} | Hold:{SwitchPosition}");
+    }
+
     private void HandleGrabDirection()
     {
         if (targetDir == 1)
@@ -395,21 +447,14 @@ public class PlayerController : MonoBehaviour
     {
         if ((ledgeDetected && canGrabLedge))
         {
-            //rb.gravityScale = baseGravityScale;
+
             canGrabLedge = false;
             isGliding = false;
 
-            Vector2 ledgePosition = LedgeDetection.Instance.transform.position;
-            if (playerDirGameObject.transform.localScale == Vector3.right)
-            {
-                climbBegunPosition = ledgePosition + offset1Right;
-                climbOverPosition = ledgePosition + offset2Right;
-            }
-            if (playerDirGameObject.transform.localScale == Vector3.left)
-            {
-                climbBegunPosition = ledgePosition + offset1Left;
-                climbOverPosition = ledgePosition + offset2Left;
-            }
+
+            climbBegunPosition = GrabPosition;
+            climbOverPosition = SwitchPosition;
+
             canClimb = true;
         }
 
@@ -422,9 +467,9 @@ public class PlayerController : MonoBehaviour
             isGliding = false;
             isDashing = false;
 
-            //rb.gravityScale = baseGravityScale;
+
             OnPlayerGrab?.Invoke(this, EventArgs.Empty);
-            //oneGrab = true;
+
         }
     }
     public void LedgeClimbOver()
