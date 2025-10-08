@@ -9,8 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b05720e4e98f0264f8079241eb5be8c0, type: 3}
-  m_Name: BirdEnemy
+  m_Script: {fileID: 11500000, guid: 400b9738efe769c4cba285146223648d, type: 3}
+  m_Name: ShooterEnemy
   m_EditorClassIdentifier: 
   Speed: 3
-  KnockbackForce: {x: 4, y: 2}
+  FireRate: 1
+  FireCount: 3
+  BulletSpeed: 5
