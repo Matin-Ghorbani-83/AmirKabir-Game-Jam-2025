@@ -5,7 +5,7 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class PlayerHealthSystem : MonoBehaviour
 {
-    public static PlayerHealthSystem instance {  get;  set; }   
+    public static PlayerHealthSystem instance { get; set; }
     // ---------- Config ----------
     [Header("Health")]
     [SerializeField] private int maxHearts = 2;       // visual hearts count (starts with 2)
@@ -40,7 +40,7 @@ public class PlayerHealthSystem : MonoBehaviour
     // coroutine handles
     private Coroutine invincibleCoroutine;
     private Coroutine regenCoroutine;
-
+    private Coroutine pendingDamageCoroutine = null;
     // ---------- Events (logic-only) ----------
     public enum DamageType { ShooterCollision, Projectile, Fall }
 
@@ -95,15 +95,40 @@ public class PlayerHealthSystem : MonoBehaviour
     /// <summary> Call when player falls below level or is considered fallen. </summary>
     public void NotifyFallen()
     {
-        Debug.Log("[HealthSystem] NotifyFallen called -> applying Fall damage and requesting respawn.");
-        ApplyDamageInternal(DamageType.Fall, transform.position, true, 0f);
+        Debug.Log("[HealthSystem] NotifyFallen called -> forcing Fall damage & respawn.");
+
+
+        if (pendingDamageCoroutine != null)
+        {
+            StopCoroutine(pendingDamageCoroutine);
+            pendingDamageCoroutine = null;
+            Debug.Log("[HealthSystem] Pending damage coroutine stopped because of Fall.");
+        }
+        if (invincibleCoroutine != null)
+        {
+            StopCoroutine(invincibleCoroutine);
+            invincibleCoroutine = null;
+            isInvincible = false;
+            OnInvincibilityChanged?.Invoke(false);
+            Debug.Log("[HealthSystem] Invincibility canceled because of Fall.");
+        }
+        if (regenCoroutine != null)
+        {
+            StopCoroutine(regenCoroutine);
+            regenCoroutine = null;
+            isRegenRunning = false;
+            Debug.Log("[HealthSystem] Heart regen canceled because of Fall.");
+        }
+
+
+        ApplyDamageImmediateForFall();
     }
 
     /// <summary> External systems (platforms) should call this to register last safe respawn pos. </summary>
     public void RegisterSafeRespawnPosition(Vector3 pos)
     {
         lastSafeRespawnPos = pos;
-        
+
         Debug.Log($"[HealthSystem] RegisterSafeRespawnPosition: {pos}");
     }
 
@@ -124,7 +149,7 @@ public class PlayerHealthSystem : MonoBehaviour
         if (other.TryGetComponent<BirdEnemy>(out BirdEnemy bird))
         {
             Debug.Log($"[HealthSystem] Collision with BirdEnemy detected at {hitPoint}. Scheduling shooter collision damage.");
-            ApplyDamageInternal(DamageType.ShooterCollision, hitPoint, true, shooterDamageDelay);
+            ApplyDamageInternal(DamageType.ShooterCollision, hitPoint, true, shooterDamageDelay, false);
             return;
         }
 
@@ -132,22 +157,23 @@ public class PlayerHealthSystem : MonoBehaviour
         if (other.TryGetComponent<Projectile>(out Projectile proj))
         {
             Debug.Log($"[HealthSystem] Collision with Projectile detected at {hitPoint}. Applying projectile damage.");
-            ApplyDamageInternal(DamageType.Projectile, hitPoint, false, 0f);
+            ApplyDamageInternal(DamageType.Projectile, hitPoint, false, 0f, false);
             // optional: let projectile handle its destruction
             return;
         }
 
         // you can add more collision checks (spikes, traps...) here
-        if(other.TryGetComponent<FallGround>(out FallGround fallGround))
+        if (other.TryGetComponent<FallGround>(out FallGround fallGround))
         {
-            ApplyDamageInternal(DamageType.Fall, hitPoint, true, 0f);
+            NotifyFallen();
+            return;
         }
     }
 
     // ---------- Central damage application pipeline ----------
-    private void ApplyDamageInternal(DamageType type, Vector3 hitPoint, bool shouldRespawn, float delay)
+    private void ApplyDamageInternal(DamageType type, Vector3 hitPoint, bool shouldRespawn, float delay, bool ignoreInvincibility)
     {
-        if (isInvincible)
+        if (isInvincible && !ignoreInvincibility)
         {
             Debug.Log($"[HealthSystem] Damage ignored because player is invincible. Type={type}");
             return;
@@ -156,7 +182,16 @@ public class PlayerHealthSystem : MonoBehaviour
         Debug.Log($"[HealthSystem] OnDamageTriggered -> Type={type}, HitPoint={hitPoint}, Delay={delay}");
         OnDamageTriggered?.Invoke(type, hitPoint);
 
-        StartCoroutine(ApplyDamageDelayedCoroutine(delay, type, hitPoint, shouldRespawn));
+        if (pendingDamageCoroutine != null)
+        {
+            Debug.Log("[HealthSystem] Canceling previously pending damage coroutine.");
+            StopCoroutine(pendingDamageCoroutine);
+            pendingDamageCoroutine = null;
+        }
+
+        pendingDamageCoroutine = StartCoroutine(ApplyDamageDelayedCoroutine(delay, type, hitPoint, shouldRespawn));
+
+
     }
 
     private IEnumerator ApplyDamageDelayedCoroutine(float delay, DamageType type, Vector3 hitPoint, bool shouldRespawn)
@@ -166,13 +201,14 @@ public class PlayerHealthSystem : MonoBehaviour
             Debug.Log($"[HealthSystem] Waiting {delay}s before applying damage (type={type})");
             yield return new WaitForSeconds(delay);
         }
+        // clear pending ref (we're executing now)
+        pendingDamageCoroutine = null;
 
         if (isInvincible)
         {
             Debug.Log($"[HealthSystem] During delay player became invincible -> cancel damage (type={type})");
             yield break;
         }
-
         // apply damage: hearts first, then core
         if (currentHearts > 0)
         {
@@ -206,12 +242,48 @@ public class PlayerHealthSystem : MonoBehaviour
         // death handling
         if (currentCore <= 0)
         {
-          //  Debug.Log($"[HealthSystem] Player died. Requesting respawn to lastSafeRespawnPos={lastSafeRespawnPos}");
+            //  Debug.Log($"[HealthSystem] Player died. Requesting respawn to lastSafeRespawnPos={lastSafeRespawnPos}");
             OnPlayerDied?.Invoke(lastSafeRespawnPos);
             //if (shouldRespawn)
             //{
             //    OnRequestRespawn?.Invoke(lastSafeRespawnPos, type);
             //}
+        }
+    }
+
+    private void ApplyDamageImmediateForFall()
+    {
+        // apply fall damage ignoring invincibility and bypassing delay (hearts first then core)
+        Debug.Log("[HealthSystem] Applying immediate FALL damage (bypass invincibility).");
+
+        // apply damage: hearts first, then core
+        if (currentHearts > 0)
+        {
+            currentHearts = Mathf.Max(0, currentHearts - 1);
+        }
+        else
+        {
+            currentCore = Mathf.Max(0, currentCore - 1);
+        }
+
+        OnDamageApplied?.Invoke(DamageType.Fall, currentHearts, currentCore);
+        BroadcastHealth();
+
+        // start invincibility as normal (so player won't immediately be re-damaged)
+        StartInvincibility(invincibilityDuration);
+
+        // If hearts exhausted and coreHealth > 0, start regen timer
+        if (currentHearts == 0 && currentCore > 0 && !isRegenRunning)
+        {
+            regenCoroutine = StartCoroutine(HeartRegenCoroutine());
+        }
+        OnRequestRespawn?.Invoke(lastSafeRespawnPos, DamageType.Fall);
+        // death handling
+        if (currentCore <= 0)
+        {
+            Debug.Log($"[HealthSystem] Player died by FALL. Requesting respawn to lastSafeRespawnPos={lastSafeRespawnPos}");
+            OnPlayerDied?.Invoke(lastSafeRespawnPos);
+
         }
     }
 
@@ -313,13 +385,13 @@ public class PlayerHealthSystem : MonoBehaviour
     // ---------- Debug/Dev utilities ----------
 #if UNITY_EDITOR
     [ContextMenu("Debug: Apply Projectile Damage")]
-    public void Debug_ApplyProjectileDamage() => ApplyDamageInternal(DamageType.Projectile, transform.position, false, 0f);
+    public void Debug_ApplyProjectileDamage() => ApplyDamageInternal(DamageType.Projectile, transform.position, false, 0f, false);
 
     [ContextMenu("Debug: Apply Shooter Collision (delayed)")]
-    public void Debug_ApplyShooterCollision() => ApplyDamageInternal(DamageType.ShooterCollision, transform.position, true, shooterDamageDelay);
+    public void Debug_ApplyShooterCollision() => ApplyDamageInternal(DamageType.ShooterCollision, transform.position, true, shooterDamageDelay, false);
 
     [ContextMenu("Debug: Force Fall Damage")]
-    public void Debug_ApplyFallDamage() => ApplyDamageInternal(DamageType.Fall, transform.position, true, 0f);
+    public void Debug_ApplyFallDamage() => ApplyDamageInternal(DamageType.Fall, transform.position, true, 0f, true);
 
     [ContextMenu("Debug: Print Internal State")]
     public void Debug_PrintState()
