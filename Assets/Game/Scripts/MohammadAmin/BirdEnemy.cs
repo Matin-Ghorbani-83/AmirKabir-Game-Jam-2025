@@ -49,7 +49,10 @@ public class BirdEnemy : MonoBehaviour, IEnemy
                 point.position = new Vector3(-8f + transform.position.x, 0f + transform.position.y, 0f);
                 break;
             case SpawnPointType.Top:
-                point.position = new Vector3(-4f + transform.position.x, 0f + transform.position.y, 0f);
+                if (top)
+                    point.position = new Vector3(transform.position.x, -4f + transform.position.y, 0f);
+                else
+                    point.position = new Vector3(transform.position.x, 4f + transform.position.y, 0f);
                 break;
         }
     }
@@ -224,7 +227,7 @@ public class BirdEnemy : MonoBehaviour, IEnemy
                             StartCoroutine(idle());
 
                         if (top)
-                            rb.velocity = new Vector2(iSpeed, -iSpeed) * ONE_HUNDRED * Time.deltaTime; 
+                            rb.velocity = new Vector2(iSpeed, -iSpeed) * ONE_HUNDRED * Time.deltaTime;
                         else
                             rb.velocity = new Vector2(iSpeed, iSpeed) * ONE_HUNDRED * Time.deltaTime;
 
