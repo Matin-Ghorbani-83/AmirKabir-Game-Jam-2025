@@ -550,9 +550,9 @@ GameObject:
   m_Component:
   - component: {fileID: 959193792}
   - component: {fileID: 959193791}
+  - component: {fileID: 959193794}
   - component: {fileID: 959193790}
   - component: {fileID: 959193793}
-  - component: {fileID: 959193794}
   m_Layer: 0
   m_Name: Square
   m_TagString: Platform

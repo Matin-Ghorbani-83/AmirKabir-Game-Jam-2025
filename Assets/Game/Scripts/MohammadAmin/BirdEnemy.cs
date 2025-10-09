@@ -20,6 +20,7 @@ public class BirdEnemy : MonoBehaviour, IEnemy
     Vector2 knockbackForce;
 
     Rigidbody2D rb;
+    Animator anym;
 
     bool right;
     bool top;
@@ -59,6 +60,7 @@ public class BirdEnemy : MonoBehaviour, IEnemy
         knockbackForce = sOEnemy.KnockbackForce;
 
         rb = GetComponent<Rigidbody2D>();
+        anym = GetComponent<Animator>();
 
         setRotationAndLocalScale();
     }
@@ -78,15 +80,15 @@ public class BirdEnemy : MonoBehaviour, IEnemy
             {
                 // -2f ==> y position for exit enemy
                 transform.position = Vector2.MoveTowards(transform.position, new Vector2(12.5f, -2f), speed * Time.deltaTime);
-                transform.rotation = Quaternion.Euler(0, 0, 180);
+                //transform.rotation = Quaternion.Euler(0, 0, 180);
             }
             else
             {
                 transform.position = Vector2.MoveTowards(transform.position, new Vector2(-12.5f, -2f), speed * Time.deltaTime);
-                if (transform.localScale.x > 0)
-                    transform.rotation = Quaternion.Euler(0, 0, 0);
-                else
-                    transform.rotation = Quaternion.Euler(0, 0, 180);
+                //if (transform.localScale.x > 0)
+                //    transform.rotation = Quaternion.Euler(0, 0, 0);
+                //else
+                //    transform.rotation = Quaternion.Euler(0, 0, 180);
             }
         }
     }
@@ -281,12 +283,12 @@ public class BirdEnemy : MonoBehaviour, IEnemy
                         if (top)
                         {
                             point.position = new Vector2(point.position.x - 50f, point.position.y);
-                            transform.rotation = Quaternion.Euler(transform.rotation.x, transform.rotation.y, 45f);
+                            //transform.rotation = Quaternion.Euler(transform.rotation.x, transform.rotation.y, 45f);
                         }
                         else
                         {
                             point.position = new Vector2(point.position.x - 50f, point.position.y);
-                            transform.rotation = Quaternion.Euler(transform.rotation.x, transform.rotation.y, -45f);
+                            //transform.rotation = Quaternion.Euler(transform.rotation.x, transform.rotation.y, -45f);
                         }
                     }
                 }
@@ -297,12 +299,12 @@ public class BirdEnemy : MonoBehaviour, IEnemy
                         if (top)
                         {
                             point.position = new Vector2(point.position.x + 50f, point.position.y);
-                            transform.rotation = Quaternion.Euler(transform.rotation.x, transform.rotation.y, -45f);
+                            //transform.rotation = Quaternion.Euler(transform.rotation.x, transform.rotation.y, -45f);
                         }
                         else
                         {
                             point.position = new Vector2(point.position.x + 50f, point.position.y);
-                            transform.rotation = Quaternion.Euler(transform.rotation.x, transform.rotation.y, 45f);
+                            //transform.rotation = Quaternion.Euler(transform.rotation.x, transform.rotation.y, 45f);
                         }
                     }
                 }
@@ -317,12 +319,12 @@ public class BirdEnemy : MonoBehaviour, IEnemy
                         if (right)
                         {
                             point.position = new Vector2(point.position.x + 50f, point.position.y);
-                            transform.rotation = Quaternion.Euler(transform.rotation.x, transform.rotation.y, 45f);
+                            //transform.rotation = Quaternion.Euler(transform.rotation.x, transform.rotation.y, 45f);
                         }
                         else
                         {
                             point.position = new Vector2(point.position.x - 50f, point.position.y);
-                            transform.rotation = Quaternion.Euler(transform.rotation.x, transform.rotation.y, 135f);
+                            //transform.rotation = Quaternion.Euler(transform.rotation.x, transform.rotation.y, 135f);
                         }
                     }
                 }
@@ -333,12 +335,12 @@ public class BirdEnemy : MonoBehaviour, IEnemy
                         if (right)
                         {
                             point.position = new Vector2(point.position.x - 50f, point.position.y);
-                            transform.rotation = Quaternion.Euler(transform.rotation.x, transform.rotation.y, 45f);
+                            //transform.rotation = Quaternion.Euler(transform.rotation.x, transform.rotation.y, 45f);
                         }
                         else
                         {
                             point.position = new Vector2(point.position.x - 50f, point.position.y);
-                            transform.rotation = Quaternion.Euler(transform.rotation.x, transform.rotation.y, -45f);
+                            //transform.rotation = Quaternion.Euler(transform.rotation.x, transform.rotation.y, -45f);
                         }
                     }
                 }
@@ -355,24 +357,24 @@ public class BirdEnemy : MonoBehaviour, IEnemy
                 if (right)
                 {
                     transform.localScale = new Vector3(transform.localScale.x, transform.localScale.y, transform.localScale.z);
-                    transform.rotation = Quaternion.Euler(0, 0, 0);
+                    //transform.rotation = Quaternion.Euler(0, 0, 0);
                 }
                 else
                 {
                     transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
-                    transform.rotation = Quaternion.Euler(0, 0, 0);
+                    //transform.rotation = Quaternion.Euler(0, 0, 0);
                 }
                 break;
             case SpawnPointType.Top:
                 if (top)
                 {
                     transform.localScale = new Vector3(transform.localScale.x, transform.localScale.y, transform.localScale.z);
-                    transform.rotation = Quaternion.Euler(0, 0, 90);
+                    //transform.rotation = Quaternion.Euler(0, 0, 90);
                 }
                 else
                 {
                     transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
-                    transform.rotation = Quaternion.Euler(0, 0, 90);
+                    //transform.rotation = Quaternion.Euler(0, 0, 90);
                 }
                 break;
         }
@@ -380,10 +382,12 @@ public class BirdEnemy : MonoBehaviour, IEnemy
 
     IEnumerator idle()
     {
+        anym.SetBool("IsMove", false);
         move = false;
         once = false;
         yield return new WaitForSeconds(TIME);
         move = true;
+        anym.SetBool("IsMove", true);
         speed *= 3;
         if (startGetOut)
         {
