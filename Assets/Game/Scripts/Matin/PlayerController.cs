@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UI;
-
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerController : MonoBehaviour
@@ -19,8 +17,6 @@ public class PlayerController : MonoBehaviour
     public event EventHandler OnPlayerGrab;
     public event EventHandler OnPlayerGlideStart;
     public event EventHandler OnPlayerGlideEnd;
-
-    [SerializeField] Text InputTxt;
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 6f;
@@ -103,7 +99,7 @@ public class PlayerController : MonoBehaviour
 
     public bool isChangingInputs;
     public KeyCode jumpKey = KeyCode.Space;
-    private KeyCode[] randomKey = { KeyCode.Space, KeyCode.W, KeyCode.P, KeyCode.T };
+    private KeyCode[] randomKey = { KeyCode.Space, KeyCode.V, KeyCode.B, KeyCode.N };
     private void Awake()
     {
         instance = this;
@@ -114,9 +110,6 @@ public class PlayerController : MonoBehaviour
     }
     private void Start()
     {
-       
-            StartCoroutine(ChangeJumpKey());
-        
         //PlatformInfoDetector.Instance.OnGrabPointsCollected += HandleGrabPointsReceived;
         //PlatformInfoDetector.Instance.OnTransformPlayerPointsCollected += HandleTransfromPointReceived;
         PlatformInfoDetector.Instance.OnGrabPointsCollected += OnGrabPointsReceived;
@@ -154,6 +147,14 @@ public class PlayerController : MonoBehaviour
     // -------------------------------
     private void HandleInput()
     {
+        if (isChangingInputs)
+        {
+            jumpKey= KeyCode.None;
+        }
+        else
+        {
+            jumpKey = KeyCode.Space;
+        }
 
             float dir = 0f;
             if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) dir -= 1f;
@@ -519,18 +520,10 @@ public class PlayerController : MonoBehaviour
     }
 
 
-    IEnumerator ChangeJumpKey()
+    IEnumerator aknsfclsdmzkcvs()
     {
-        int i =UnityEngine.Random.Range(0, randomKey.Length);
-        if (isChangingInputs)
-        {
-        Debug.Log(randomKey[i]);
-            InputTxt.text = "Next Key Code is: " + randomKey[i].ToString();
-        }
-        yield return new WaitForSeconds(4);
-        if (isChangingInputs) { 
-        jumpKey = randomKey[i];
-        }
-        StartCoroutine(ChangeJumpKey());
+        yield return new WaitForSeconds(2);
+        
+        //jumpKey = randomKey[];
     }
 }

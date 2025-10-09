@@ -39,9 +39,9 @@ public class GameManager : MonoBehaviour
     void ChangeMode()
     {
         listCounter++;
-        playerController.isDobleJumpActivated = waveSOs[listCounter].isDobleJumpActivated;
-        playerController.isDashActivated = waveSOs[listCounter].isDashActivated;
-        playerController.isGlideActivated = waveSOs[listCounter].isGlideActivated;
+        //playerController.isDobleJumpActivated = waveSOs[listCounter].isDobleJumpActivated;
+        //playerController.isDashActivated = waveSOs[listCounter].isDashActivated;
+        //playerController.isGlideActivated = waveSOs[listCounter].isGlideActivated;
 
         spawnCycleManager.minDestroyInterval = waveSOs[listCounter ].minDestroyInterval;
         spawnCycleManager.maxDestroyInterval = waveSOs[listCounter].maxDestroyInterval;
@@ -66,7 +66,7 @@ public class GameManager : MonoBehaviour
         enemySpawnerUp.maxSpawnTime = waveSOs[listCounter].maxSpawnTimeUp;
         enemySpawnerUp.minSpawnTime = waveSOs[listCounter].minSpawnTimeUp;
 
-        playerController.isChangingInputs = waveSOs[listCounter].inputChanging;
+        //playerController.isChangingInputs = waveSOs[listCounter].inputChanging;
 
         spawnCycleManager.enableSpawning = waveSOs[listCounter].platformChanging;
 
