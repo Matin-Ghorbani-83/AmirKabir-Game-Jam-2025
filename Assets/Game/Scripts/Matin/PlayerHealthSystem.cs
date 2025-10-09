@@ -29,6 +29,9 @@ public class PlayerHealthSystem : MonoBehaviour
     [Tooltip("Layers considered 'safe platforms' to register last safe respawn position.")]
     [SerializeField] private LayerMask platformLayerMask;
 
+    [Header("UI")]
+    [SerializeField] UIManager uIManager;
+
     // ---------- State ----------
     private int currentHearts;
     private int currentCore; // 0..coreHealth initial
@@ -82,6 +85,11 @@ public class PlayerHealthSystem : MonoBehaviour
     {
         // process trigger collisions (projectiles or trigger-type enemies)
         ProcessCollision(other.gameObject, other.ClosestPoint(transform.position));
+
+        if (other.gameObject.CompareTag("Bullet"))
+        {
+            uIManager.Damage();
+        }
     }
 
     private void OnCollisionEnter2D(Collision2D col)

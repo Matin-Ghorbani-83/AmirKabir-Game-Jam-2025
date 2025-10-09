@@ -9,7 +9,7 @@ public class PlayerHealthUI : MonoBehaviour
  
     [SerializeField] private Transform heartsContainer;
     [SerializeField] private Image heartPrefab;
-    [SerializeField] private TMP_Text debugText; // optional
+
 
     [Header("Colors")]
     [SerializeField] private Color fullColor = Color.red;
@@ -59,8 +59,8 @@ public class PlayerHealthUI : MonoBehaviour
 
     private void SubscribeToEvents()
     {
-        healthSystem.OnHealthChanged += HandleHealthChanged;
-        healthSystem.OnHeartRegenProgress += HandleHeartRegenProgress;
+        healthSystem.OnHealthChanged += HandleHealthChanged; // taghir
+        healthSystem.OnHeartRegenProgress += HandleHeartRegenProgress; // por
         healthSystem.OnHeartRegenerated += HandleHeartRegenerated;
         healthSystem.OnPlayerDied += HandlePlayerDied;
     }
@@ -109,8 +109,6 @@ public class PlayerHealthUI : MonoBehaviour
 
     private void PrintDebug(string msg)
     {
-        Debug.Log($"[HealthUI] {msg}");
-        if (debugText != null)
-            debugText.text = msg;
+
     }
 }
