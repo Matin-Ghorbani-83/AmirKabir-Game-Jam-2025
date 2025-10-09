@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -15,35 +15,61 @@ public class GameManager : MonoBehaviour
     [SerializeField] StaticPlatformSpawner staticPlatformSpawner;
 
     [SerializeField] List<WaveSO> waveSOs;
-    int listCounter;
+    int listCounter = 0;
 
-    [SerializeField] Text timer;
-    private float totalTime;
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    public Text timerText;
+    private float timer = 0f;
+    private int callCount = 0;
+    private int maxCalls = 4;
 
-    // Update is called once per frame
     void Update()
     {
-        totalTime += Time.deltaTime;
-        timer.text = totalTime.ToString();
+        if (callCount >= maxCalls) return;
 
-        if(totalTime%6 == 0)
+        timer += Time.deltaTime;
+
+        // نمایش تایمر به صورت دقیقه:ثانیه
+        int minutes = Mathf.FloorToInt(timer / 60f);
+        int seconds = Mathf.FloorToInt(timer % 60f);
+        timerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+
+        // هر ۶۰ ثانیه فقط یکبار
+        if (Mathf.FloorToInt(timer) % 60 == 0 && Mathf.FloorToInt(timer) != 0)
         {
-            ChangeMode();
+            if (Mathf.Approximately(timer % 60f, 0f))
+            {
+                CallFunction();
+                callCount++;
+            }
         }
     }
+
+    void CallFunction()
+    {
+        ChangeMode();
+        StartCoroutine(PauseGameForSeconds(5f));
+    }
+
+    IEnumerator PauseGameForSeconds(float seconds)
+    {
+        Time.timeScale = 0f;   // بازی متوقف
+        Debug.Log("بازی متوقف شد برای " + seconds + " ثانیه");
+
+        yield return new WaitForSecondsRealtime(seconds); // ۵ ثانیه واقعی (نه وابسته به تایم اسکیل)
+
+        Time.timeScale = 1f;   // بازی ادامه
+        Debug.Log("بازی دوباره شروع شد");
+    }
+
     void ChangeMode()
     {
+        DestroyByTagAll.instance.DestroyAllWithTwoTags();
         listCounter++;
         playerController.isDobleJumpActivated = waveSOs[listCounter].isDobleJumpActivated;
         playerController.isDashActivated = waveSOs[listCounter].isDashActivated;
         playerController.isGlideActivated = waveSOs[listCounter].isGlideActivated;
 
-        spawnCycleManager.minDestroyInterval = waveSOs[listCounter ].minDestroyInterval;
+        spawnCycleManager.minDestroyInterval = waveSOs[listCounter].minDestroyInterval;
         spawnCycleManager.maxDestroyInterval = waveSOs[listCounter].maxDestroyInterval;
         spawnCycleManager.initialDelay = waveSOs[listCounter].initialDelay;
         spawnCycleManager.respawnDelay = waveSOs[listCounter].respawnDelay;
@@ -58,7 +84,7 @@ public class GameManager : MonoBehaviour
 
         enemySpawnerright.maximumCount = waveSOs[listCounter].minimumCountRight;
         enemySpawnerright.minimumCount = waveSOs[listCounter].maximumCountRight;
-        enemySpawnerright.maxSpawnTime = waveSOs[listCounter ].maxSpawnTimeRight;
+        enemySpawnerright.maxSpawnTime = waveSOs[listCounter].maxSpawnTimeRight;
         enemySpawnerright.minSpawnTime = waveSOs[listCounter].minSpawnTimeRight;
 
         enemySpawnerUp.maximumCount = waveSOs[listCounter].minimumCountUp;
@@ -70,13 +96,8 @@ public class GameManager : MonoBehaviour
 
         spawnCycleManager.enableSpawning = waveSOs[listCounter].platformChanging;
 
-        staticPlatformSpawner. = waveSOs[listCounter].staticPlatform;
+        staticPlatformSpawner.spawnActive = waveSOs[listCounter].staticPlatform;
 
     }
-    IEnumerator ChangeWave()
-    {
-        yield return new WaitForSeconds(5);
-        ChangeMode();
-        
-    }
+
 }

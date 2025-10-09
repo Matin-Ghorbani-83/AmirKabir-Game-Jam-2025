@@ -631,7 +631,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8dd1f2d9e278a4a4b90449a35d1ebc76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enableSpawning: 0
+  enableSpawning: 1
   prefabs:
   - {fileID: 5237357240582993447, guid: 0757cd1a46cc1c44290d7d5e5690051c, type: 3}
   spawnPoints:
@@ -786,7 +786,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 6bdee7d043ef5ed4f9741b3a28ce0009, type: 2}
   - {fileID: 11400000, guid: e6fdbf261e31140429e3303e5ce2eeb9, type: 2}
   - {fileID: 11400000, guid: 885d752d4166d1b479c5e63dc4ac3a79, type: 2}
-  timer: {fileID: 2091258288}
+  timerText: {fileID: 2091258288}
 --- !u!4 &1445349613
 Transform:
   m_ObjectHideFlags: 0
@@ -905,6 +905,52 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!1 &1516640387
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1516640389}
+  - component: {fileID: 1516640388}
+  m_Layer: 0
+  m_Name: DestroyByTagg
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1516640388
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1516640387}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3372db49c131b33478c56f20025469b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tag1: ShooterEnemy
+  tag2: BirdEnemy
+--- !u!4 &1516640389
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1516640387}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.1320374, y: 5.293187, z: -0.046682503}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1532358707
 GameObject:
   m_ObjectHideFlags: 0
@@ -1416,3 +1462,4 @@ SceneRoots:
   - {fileID: 726895307}
   - {fileID: 839072388}
   - {fileID: 1723860923}
+  - {fileID: 1516640389}
