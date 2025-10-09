@@ -10,7 +10,9 @@ public class GameManager : MonoBehaviour
     [SerializeField] SpawnCycleManager spawnCycleManager;
     [SerializeField] RailEnemySpawner railEnemySpawner;
     [SerializeField] EnemySpawner enemySpawnerleft;
-    [SerializeField] EnemySpawner enemySpawnerright;    
+    [SerializeField] EnemySpawner enemySpawnerright;
+    [SerializeField] EnemySpawner enemySpawnerUp;
+    [SerializeField] StaticPlatformSpawner staticPlatformSpawner;
 
     [SerializeField] List<WaveSO> waveSOs;
     int listCounter;
@@ -59,6 +61,22 @@ public class GameManager : MonoBehaviour
         enemySpawnerright.maxSpawnTime = waveSOs[listCounter ].maxSpawnTimeRight;
         enemySpawnerright.minSpawnTime = waveSOs[listCounter].minSpawnTimeRight;
 
+        enemySpawnerUp.maximumCount = waveSOs[listCounter].minimumCountUp;
+        enemySpawnerUp.minimumCount = waveSOs[listCounter].minimumCountUp;
+        enemySpawnerUp.maxSpawnTime = waveSOs[listCounter].maxSpawnTimeUp;
+        enemySpawnerUp.minSpawnTime = waveSOs[listCounter].minSpawnTimeUp;
 
+        playerController.isChangingInputs = waveSOs[listCounter].inputChanging;
+
+        spawnCycleManager.enableSpawning = waveSOs[listCounter].platformChanging;
+
+        staticPlatformSpawner.spawnActive = waveSOs[listCounter].staticPlatform;
+
+    }
+    IEnumerator ChangeWave()
+    {
+        yield return new WaitForSeconds(5);
+        ChangeMode();
+        
     }
 }

@@ -23,6 +23,12 @@ public class WaveSO : ScriptableObject
     public float maxSpawnTimeRight;
     public float minSpawnTimeRight;
 
+    [Header("Bird Enemy Setting Left Right")]
+    public int minimumCountUp;
+    public int maximumCountUp;
+    public float maxSpawnTimeUp;
+    public float minSpawnTimeUp;
+
     [Header("Rail Enemy Settings")]
     public float maxSpawnTimeforrail = 5f;
     public float minSpawnTimeforrail = 1f;
@@ -30,6 +36,8 @@ public class WaveSO : ScriptableObject
     [Header("Wave Compatibilitues")]
     public bool inputChanging;
     public bool platformChanging;
+    public bool staticPlatform;
+
 
     public bool isDobleJumpActivated;
     public bool isGlideActivated;

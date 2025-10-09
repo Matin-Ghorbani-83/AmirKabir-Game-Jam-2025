@@ -1,6 +1,11 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
+
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerController : MonoBehaviour
@@ -14,6 +19,8 @@ public class PlayerController : MonoBehaviour
     public event EventHandler OnPlayerGrab;
     public event EventHandler OnPlayerGlideStart;
     public event EventHandler OnPlayerGlideEnd;
+
+    [SerializeField] Text InputTxt;
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 6f;
@@ -95,7 +102,8 @@ public class PlayerController : MonoBehaviour
 
 
     public bool isChangingInputs;
-
+    public KeyCode jumpKey = KeyCode.Space;
+    private KeyCode[] randomKey = { KeyCode.Space, KeyCode.W, KeyCode.P, KeyCode.T };
     private void Awake()
     {
         instance = this;
@@ -106,6 +114,9 @@ public class PlayerController : MonoBehaviour
     }
     private void Start()
     {
+       
+            StartCoroutine(ChangeJumpKey());
+        
         //PlatformInfoDetector.Instance.OnGrabPointsCollected += HandleGrabPointsReceived;
         //PlatformInfoDetector.Instance.OnTransformPlayerPointsCollected += HandleTransfromPointReceived;
         PlatformInfoDetector.Instance.OnGrabPointsCollected += OnGrabPointsReceived;
@@ -143,9 +154,6 @@ public class PlayerController : MonoBehaviour
     // -------------------------------
     private void HandleInput()
     {
-        if (!isChangingInputs)
-        {
-
 
             float dir = 0f;
             if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) dir -= 1f;
@@ -155,7 +163,7 @@ public class PlayerController : MonoBehaviour
             if (Mathf.Abs(dir) > 0.01f)
                 OnPlayerMove?.Invoke(this, EventArgs.Empty);
 
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (Input.GetKeyDown(jumpKey))
             {
                 jumpRequested = true;
 
@@ -170,13 +178,9 @@ public class PlayerController : MonoBehaviour
                 dashRequested = true;
             if (isGlideActivated)
             {
-                HandleJumpHold(Input.GetKey(KeyCode.Space));
+                HandleJumpHold(Input.GetKey(jumpKey));
             }
-        }
-        if (isChangingInputs)
-        {
-
-        }
+       
         
     }
 
@@ -512,5 +516,21 @@ public class PlayerController : MonoBehaviour
             Gizmos.color = Color.yellow;
             Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
         }
+    }
+
+
+    IEnumerator ChangeJumpKey()
+    {
+        int i =UnityEngine.Random.Range(0, randomKey.Length);
+        if (isChangingInputs)
+        {
+        Debug.Log(randomKey[i]);
+            InputTxt.text = "Next Key Code is: " + randomKey[i].ToString();
+        }
+        yield return new WaitForSeconds(4);
+        if (isChangingInputs) { 
+        jumpKey = randomKey[i];
+        }
+        StartCoroutine(ChangeJumpKey());
     }
 }
