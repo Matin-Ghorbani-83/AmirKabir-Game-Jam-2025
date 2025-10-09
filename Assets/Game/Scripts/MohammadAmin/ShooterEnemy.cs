@@ -17,6 +17,7 @@ public class ShooterEnemy : MonoBehaviour, IEnemy
     [SerializeField] float shootPositionY;
 
     Rigidbody2D rb;
+    Animator anym;
     int count = 1;
 
     bool top;
@@ -35,6 +36,7 @@ public class ShooterEnemy : MonoBehaviour, IEnemy
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        anym = GetComponent<Animator>();
 
         if (transform.position.x > 0)
             transform.localScale = new Vector3(transform.localScale.x, transform.localScale.y, transform.localScale.z);
@@ -72,6 +74,7 @@ public class ShooterEnemy : MonoBehaviour, IEnemy
                 }
                 else
                 {
+                    anym.SetBool("IsMove", false);
                     if (sOEnemy.FireCount <= count)
                         StartCoroutine(getOut(iSpeed));
                 }
@@ -82,6 +85,7 @@ public class ShooterEnemy : MonoBehaviour, IEnemy
     IEnumerator getOut(float iSpeed)
     {
         yield return new WaitForSeconds(sOEnemy.FireRate * 2f);
+        anym.SetBool("IsMove", true);
         transform.position = Vector2.Lerp(transform.position, new Vector2(transform.position.x, -7.5f), (iSpeed / 2) * Time.deltaTime);
     }
 
@@ -109,12 +113,14 @@ public class ShooterEnemy : MonoBehaviour, IEnemy
     IEnumerator shootMoving()
     {
         yield return new WaitForSeconds(sOEnemy.FireRate);
+        anym.SetTrigger("Shoot");
         Instantiate(bullet, bulletPosition.position, Quaternion.identity);
         StartCoroutine(shootMoving());
     }
     IEnumerator shootConst()
     {
         yield return new WaitForSeconds(sOEnemy.FireRate);
+        anym.SetTrigger("Shoot");
         Instantiate(bullet, bulletPosition.position, Quaternion.identity);
         if (sOEnemy.FireCount != count)
         {
