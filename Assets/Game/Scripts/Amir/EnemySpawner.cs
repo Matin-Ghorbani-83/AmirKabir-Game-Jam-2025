@@ -8,43 +8,40 @@ public enum EnemySpawnerMode
     side, top
 }
 
-// Ajab Roz Badi Bod Emroz
 public class EnemySpawner : MonoBehaviour
 {
     [Header("Spawner Type")]
     [SerializeField] EnemySpawnerMode enemyMode;
 
-    [Header("Bounds")]
+    [Header("Vertical Bounds")]
     [SerializeField] Transform topBound;
     [SerializeField] Transform downBound;
 
-    [Header("Enemy Count")]
-    [SerializeField] int minimumCount;
-    [SerializeField] int maximumCount;
+    [Header("Set Enemy Count Value")]
+    [SerializeField] int minimumCount = 1;
+    [SerializeField] int maximumCount = 3;
 
-    [Header("Spawn Timing")]
-    [SerializeField] float maxSpawnTime;
-    [SerializeField] float minSpawnTime;
+    [Header("Spawn Settings")]
+    [SerializeField] float maxSpawnTime = 5f;
+    [SerializeField] float minSpawnTime = 1f;
+    [SerializeField] float spawnJitterPosettive = 0f;
+    [SerializeField] float spawnJitterNegetive = 0f;
+    [SerializeField] int maxSpawnInBound = 10; // optional
+    [SerializeField] float maxDistanceBetwenEnemy = 5f; // optional
 
-    [Header("Spawn Jitter")]
-    [SerializeField] float spawnJitterPositive;
-    [SerializeField] float spawnJitterNegative;
-
-    [Header("Minimum Distance Between Enemies")]
-    [SerializeField, Min(0f)] float minDistanceBetweenEnemies = 1f; // قابل تنظیم از اینسپکتور
-
-    [Header("Enemy Settings")]
+    [Header("Enemy Setting")]
     [SerializeField] EnemyType enemyType;
     [SerializeField] SpawnPointType spawnPointType;
     [SerializeField] EnemyMovementType enemyMovementType;
 
-    [Header("Randomization Options")]
-    [SerializeField] bool randomEnemySpawning;
-    [SerializeField] bool randomEnemyMovement;
-    [SerializeField] bool randomEnemySpawnLocation;
+    [Header("Make Random Enemy")]
+    [SerializeField] bool randomEnemySpawning = false;
+    [SerializeField] bool randomEnemyMovment = false;
+    [SerializeField] bool randomEnemySpawnLocation = false;
 
-    [Header("Enemy Collider Radius")]
-    [SerializeField, Min(0f)] float enemyRadius = 0.5f; // نصف اندازه Collider دشمن
+    [Header("Spacing / Physics (2D)")]
+    [SerializeField, Min(0f)] float minDistanceBetweenEnemies = 1f; // قابل تنظیم از اینسپکتور
+    [SerializeField, Min(0f)] float enemyRadius = 0.5f; // نصفِ شعاعی که می‌خوای برای چک فیزیکی استفاده کنی
 
     void Start()
     {
@@ -55,16 +52,18 @@ public class EnemySpawner : MonoBehaviour
     {
         while (true)
         {
-            float waitTime = Random.Range(minSpawnTime, maxSpawnTime);
-            yield return new WaitForSeconds(waitTime);
+            float randTime = Random.Range(minSpawnTime, maxSpawnTime);
+            yield return new WaitForSeconds(randTime);
 
-            int enemyCount = Random.Range(minimumCount, maximumCount + 1);
-            SpawnEnemies(enemyCount);
+            int randEnemyCount = Random.Range(minimumCount, maximumCount + 1);
+            SpawnEnemies(randEnemyCount);
         }
     }
 
     private void SpawnEnemies(int count)
     {
+        // <-- مهم: این لیست هر بار که SpawnEnemies صدا زده میشه ریست میشه،
+        // بنابراین موج بعدی میتونه دوباره از همان نقاط استفاده کنه.
         List<Vector2> previousPositions = new List<Vector2>();
 
         for (int i = 0; i < count; i++)
@@ -72,48 +71,64 @@ public class EnemySpawner : MonoBehaviour
             Vector2 spawnPos = Vector2.zero;
             int attempts = 0;
 
-            // تلاش برای پیدا کردن موقعیت معتبر
+            // تلاش برای پیدا کردن موقعیت معتبر: هم فاصله منطقی با قبلی‌ها، هم چک فیزیکی (OverlapCircle)
             do
             {
-                spawnPos = GenerateSpawnPosition(previousPositions);
+                spawnPos = GenerateSpawnPosition();
                 attempts++;
             }
-            while ((!IsPositionFree(spawnPos) || !IsFarEnough(spawnPos, previousPositions)) && attempts < 100);
+            while ((!IsFarEnough(spawnPos, previousPositions) || !IsPositionFree(spawnPos)) && attempts < 100);
 
             if (attempts >= 100)
             {
-                Debug.LogWarning("Failed to find a valid spawn position for enemy #" + i);
-                continue; // اگر پیدا نکرد، دشمن رو نساخت
+                Debug.LogWarning($"EnemySpawner: couldn't find valid spawn pos for enemy #{i} after {attempts} attempts. Skipping this spawn.");
+                continue; // اگر نتونست جای درست پیدا کنه، اون دشمن رو نمی‌سازه
             }
 
             previousPositions.Add(spawnPos);
 
+            // *** تغییر طبق خواستهٔ تو: Movement random با بازه‌ی 0 تا 3 ***
             EnemyType finalEnemyType = randomEnemySpawning
                 ? (EnemyType)Random.Range(0, System.Enum.GetValues(typeof(EnemyType)).Length)
                 : enemyType;
 
-            EnemyMovementType finalMovementType = randomEnemyMovement
-                ? (EnemyMovementType)Random.Range(0, System.Enum.GetValues(typeof(EnemyMovementType)).Length)
+            EnemyMovementType finalMovementType = randomEnemyMovment
+                ? (EnemyMovementType)Random.Range(0, 3) // <-- برگشت به Random.Range(0, 3) طبق خواست تو
                 : enemyMovementType;
 
-            EnemyFactory.CreateEnemy(finalEnemyType, spawnPointType, finalMovementType, spawnPos);
+            // اگر خواستی مکان اسپاون رو رندم یا ثابت بسازی (فیلد randomEnemySpawnLocation)
+            if (!randomEnemySpawnLocation)
+            {
+                if (spawnPointType == SpawnPointType.Side)
+                {
+                    spawnPos = new Vector2(transform.position.x, spawnPos.y);
+                }
+                else
+                {
+                    spawnPos = new Vector2(spawnPos.x, transform.position.y);
+                }
+            }
+
+            // Create as Vector3 (z from this transform)
+            EnemyFactory.CreateEnemy(finalEnemyType, spawnPointType, finalMovementType, new Vector3(spawnPos.x, spawnPos.y, transform.position.z));
         }
     }
 
-    private Vector2 GenerateSpawnPosition(List<Vector2> previousPositions)
+    private Vector2 GenerateSpawnPosition()
     {
-        float minY = Mathf.Min(topBound.position.y + spawnJitterPositive, downBound.position.y + spawnJitterNegative);
-        float maxY = Mathf.Max(topBound.position.y + spawnJitterPositive, downBound.position.y + spawnJitterNegative);
-        float minX = Mathf.Min(topBound.position.x + spawnJitterPositive, downBound.position.x + spawnJitterNegative);
-        float maxX = Mathf.Max(topBound.position.x + spawnJitterPositive, downBound.position.x + spawnJitterNegative);
+        float minY = Mathf.Min(topBound.position.y + spawnJitterPosettive, downBound.position.y + spawnJitterNegetive);
+        float maxY = Mathf.Max(topBound.position.y + spawnJitterPosettive, downBound.position.y + spawnJitterNegetive);
 
-        float y = spawnPointType == SpawnPointType.Side ? Random.Range(minY, maxY) : transform.position.y;
-        float x = spawnPointType != SpawnPointType.Side ? Random.Range(minX, maxX) : transform.position.x;
+        float minX = Mathf.Min(topBound.position.x + spawnJitterPosettive, downBound.position.x + spawnJitterNegetive);
+        float maxX = Mathf.Max(topBound.position.x + spawnJitterPosettive, downBound.position.x + spawnJitterNegetive);
+
+        float y = (spawnPointType == SpawnPointType.Side) ? Random.Range(minY, maxY) : transform.position.y;
+        float x = (spawnPointType != SpawnPointType.Side) ? Random.Range(minX, maxX) : transform.position.x;
 
         return new Vector2(x, y);
     }
 
-    // چک فاصله از سایر spawnها
+    // فاصله با بقیه spawnها (فقط برای همین دور)
     private bool IsFarEnough(Vector2 pos, List<Vector2> previousPositions)
     {
         foreach (var prev in previousPositions)
@@ -124,10 +139,23 @@ public class EnemySpawner : MonoBehaviour
         return true;
     }
 
-    // چک برخورد با دشمن‌های حاضر
+    // چک برخورد با collider2D های حاضر
     private bool IsPositionFree(Vector2 pos)
     {
-        Collider2D[] colliders = Physics2D.OverlapCircleAll(pos, enemyRadius);
-        return colliders.Length == 0;
+        Collider2D[] hits = Physics2D.OverlapCircleAll(pos, enemyRadius);
+        return hits.Length == 0;
+    }
+
+    // Debug gizmos
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.cyan;
+        if (topBound != null && downBound != null)
+        {
+            Vector3 a = new Vector3(transform.position.x, topBound.position.y, transform.position.z);
+            Vector3 b = new Vector3(transform.position.x, downBound.position.y, transform.position.z);
+            Gizmos.DrawLine(a, b);
+        }
+        Gizmos.DrawWireSphere(transform.position, enemyRadius);
     }
 }
