@@ -136,7 +136,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8464950296962099523, guid: fe91a3f27331c3e4ea1ce03755f4764b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 6.26
+      value: 4.12
       objectReference: {fileID: 0}
     - target: {fileID: 8464950296962099523, guid: fe91a3f27331c3e4ea1ce03755f4764b, type: 3}
       propertyPath: m_LocalPosition.z
@@ -953,6 +953,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8dd1f2d9e278a4a4b90449a35d1ebc76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  enableSpawning: 1
   prefabs:
   - {fileID: 504609923941526603, guid: 8bb180a136634e3418c858dd71738ed5, type: 3}
   spawnPoints:
@@ -967,6 +968,8 @@ MonoBehaviour:
   - {fileID: 1386757382}
   - {fileID: 527813965}
   useInitialOnlySpawnPoints: 1
+  useFixedInitialSpawn: 0
+  fixedInitialPoints: []
   preDestroyWarningTime: 2
   exclusionRules: []
   occupancyExclusions:
@@ -1363,7 +1366,7 @@ Transform:
   m_GameObject: {fileID: 1544429308}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.060000002, y: 5.4, z: 0}
+  m_LocalPosition: {x: 0.060000002, y: 3.2599998, z: 0}
   m_LocalScale: {x: 1, y: 0.34, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
