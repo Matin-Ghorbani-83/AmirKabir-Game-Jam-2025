@@ -4,6 +4,8 @@ namespace SimpleFactory
     {
         Normal,
         Fake,
-        Redirect
+        Redirect,
+        Moving,
+        Const
     }
 }

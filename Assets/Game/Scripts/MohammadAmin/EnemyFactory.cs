@@ -9,14 +9,17 @@ namespace SimpleFactory
             switch (type)
             {
                 case EnemyType.Bird:
-                    GameObject prefab = Resources.Load<GameObject>("BirdEnemy");
-                    prefab.GetComponent<BirdEnemy>().spawnPointType = spawnPoint;
-                    prefab.GetComponent<BirdEnemy>().enemyMovementType = movementType;
+                    GameObject bird = Resources.Load<GameObject>("BirdEnemy");
+                    bird.GetComponent<BirdEnemy>().spawnPointType = spawnPoint;
+                    bird.GetComponent<BirdEnemy>().enemyMovementType = movementType;
 
-                    Instantiate(prefab, position, Quaternion.identity);
+                    Instantiate(bird, position, Quaternion.identity);
                     break;
-                case EnemyType.Runner:
+                case EnemyType.Shooter:
+                    GameObject shooter = Resources.Load<GameObject>("ShooterEnemy");
+                    shooter.GetComponent<ShooterEnemy>().enemyMovementType = movementType;
 
+                    Instantiate(shooter, position, Quaternion.identity);
                     break;
             }
         }
