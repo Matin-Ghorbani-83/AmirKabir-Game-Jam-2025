@@ -12,9 +12,9 @@ public class RailEnemySpawner : MonoBehaviour
     [SerializeField] EnemyMovementType enemyMovementType;
 
     [Header("Spawn Settings")]
-    [SerializeField] float maxSpawnTime = 5f;
-    [SerializeField] float minSpawnTime = 1f;
-    [SerializeField] float exactSpawnTime = 1f;
+    public float maxSpawnTime = 5f;
+    public float minSpawnTime = 1f;
+    public float exactSpawnTime = 1f;
 
     [Header("Spawn Condition")]
     [SerializeField] bool spawnInExactTime;

@@ -88,6 +88,14 @@ public class PlayerController : MonoBehaviour
     private Vector2 climbBegunPosition;
     private Vector2 climbOverPosition;
 
+
+    public bool isDobleJumpActivated;
+    public bool isGlideActivated;
+    public bool isDashActivated;
+
+
+    public bool isChangingInputs;
+
     private void Awake()
     {
         instance = this;
@@ -135,29 +143,41 @@ public class PlayerController : MonoBehaviour
     // -------------------------------
     private void HandleInput()
     {
-        float dir = 0f;
-        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) dir -= 1f;
-        if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow)) dir += 1f;
-        SetDirection(dir);
-
-        if (Mathf.Abs(dir) > 0.01f)
-            OnPlayerMove?.Invoke(this, EventArgs.Empty);
-
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (!isChangingInputs)
         {
-            jumpRequested = true;
 
 
+            float dir = 0f;
+            if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) dir -= 1f;
+            if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow)) dir += 1f;
+            SetDirection(dir);
+
+            if (Mathf.Abs(dir) > 0.01f)
+                OnPlayerMove?.Invoke(this, EventArgs.Empty);
+
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                jumpRequested = true;
+
+
+
+            }
+
+            if (didDoubleJump)
+                OnPlayerDoubleJump?.Invoke(this, EventArgs.Empty);
+
+            if (Input.GetKeyDown(KeyCode.LeftShift) && isDashActivated)
+                dashRequested = true;
+            if (isGlideActivated)
+            {
+                HandleJumpHold(Input.GetKey(KeyCode.Space));
+            }
+        }
+        if (isChangingInputs)
+        {
 
         }
-
-        if (didDoubleJump)
-            OnPlayerDoubleJump?.Invoke(this, EventArgs.Empty);
-
-        if (Input.GetKeyDown(KeyCode.LeftShift))
-            dashRequested = true;
-
-        HandleJumpHold(Input.GetKey(KeyCode.Space));
+        
     }
 
     // -------------------------------
@@ -230,7 +250,7 @@ public class PlayerController : MonoBehaviour
                 DoJump();
                 OnPlayerJump?.Invoke(this, EventArgs.Empty);
             }
-            else if (!didDoubleJump && canDoubleJump)
+            else if (!didDoubleJump && canDoubleJump&& isDobleJumpActivated)
             {
                 DoJump();
                 didDoubleJump = true;

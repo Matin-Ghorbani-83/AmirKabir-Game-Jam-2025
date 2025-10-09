@@ -18,12 +18,12 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] Transform downBound;
 
     [Header("Set Enemy Count Value")]
-    [SerializeField] int minimumCount = 1;
-    [SerializeField] int maximumCount = 3;
+    public int minimumCount = 1;
+    public int maximumCount = 3;
 
     [Header("Spawn Settings")]
-    [SerializeField] float maxSpawnTime = 5f;
-    [SerializeField] float minSpawnTime = 1f;
+    public float maxSpawnTime = 5f;
+    public float minSpawnTime = 1f;
     [SerializeField] float spawnJitterPosettive = 0f;
     [SerializeField] float spawnJitterNegetive = 0f;
     [SerializeField] int maxSpawnInBound = 10; // optional
