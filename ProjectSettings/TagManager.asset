@@ -7,6 +7,7 @@ TagManager:
   - BirdEnemy
   - Platform
   - Bullet
+  - ShooterEnemy
   layers:
   - Default
   - TransparentFX
