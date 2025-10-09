@@ -7,7 +7,7 @@ public class RailEnemySpawner : MonoBehaviour
     [Header("Spawn Settings")]
     [SerializeField] float maxSpawnTime = 5f;
     [SerializeField] float minSpawnTime = 1f;
-    
+    [SerializeField] float exactSpawnTime = 1f;
     void Start()
     {
         
