@@ -154,7 +154,7 @@ public class PlayerHealthSystem : MonoBehaviour
         }
 
         // check for shooter enemy (example: BirdEnemy marker component)
-        if (other.TryGetComponent<BirdEnemy>(out BirdEnemy bird))
+        if (other.TryGetComponent<ShooterEnemy>(out ShooterEnemy ShooterEnemy))
         {
             Debug.Log($"[HealthSystem] Collision with BirdEnemy detected at {hitPoint}. Scheduling shooter collision damage.");
             ApplyDamageInternal(DamageType.ShooterCollision, hitPoint, true, shooterDamageDelay, false);

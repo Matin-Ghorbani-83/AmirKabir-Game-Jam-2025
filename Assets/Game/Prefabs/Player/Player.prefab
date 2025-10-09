@@ -178,7 +178,7 @@ Transform:
   m_GameObject: {fileID: 7763303842527572849}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.404, z: 0}
+  m_LocalPosition: {x: 0, y: -0.731, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -581,6 +581,11 @@ MonoBehaviour:
   baseGravityScale: 3.5
   gravityChangeSpeed: 8
   coyoteTime: 0.12
+  isDobleJumpActivated: 1
+  isGlideActivated: 1
+  isDashActivated: 1
+  isChangingInputs: 0
+  jumpKey: 32
 --- !u!114 &7805712952929944746
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -616,6 +621,7 @@ MonoBehaviour:
   platformLayerMask:
     serializedVersion: 2
     m_Bits: 64
+  uIManager: {fileID: 0}
 --- !u!114 &2044949909010999200
 MonoBehaviour:
   m_ObjectHideFlags: 0
