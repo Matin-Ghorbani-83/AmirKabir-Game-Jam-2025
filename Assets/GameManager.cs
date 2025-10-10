@@ -14,6 +14,9 @@ public class GameManager : MonoBehaviour
     [SerializeField] EnemySpawner enemySpawnerUp;
     [SerializeField] StaticPlatformSpawner staticPlatformSpawner;
     [SerializeField] GameObject changePanel;
+    [SerializeField] GameObject skillOne;
+    [SerializeField] GameObject skillTwo;
+    [SerializeField] GameObject skillThree;
     [SerializeField] Text Abilitytext;
     [SerializeField] Text nextrandtext;
     private GameObject backGround;
@@ -91,6 +94,9 @@ public class GameManager : MonoBehaviour
     {
         DestroyByTagAll.instance.DestroyAllWithTwoTags();
         listCounter++;
+
+        changeUI();
+
         playerController.isDobleJumpActivated = waveSOs[listCounter].isDobleJumpActivated;
         playerController.isDashActivated = waveSOs[listCounter].isDashActivated;
         playerController.isGlideActivated = waveSOs[listCounter].isGlideActivated;
@@ -138,8 +144,18 @@ public class GameManager : MonoBehaviour
 
         Abilitytext.text = waveSOs[listCounter].givenSkillDiscriptionstxt;
         nextrandtext.text = waveSOs[listCounter].nextUnstableThingtxt;
+    }
 
+    void changeUI()
+    {
+        if (waveSOs[listCounter].isDobleJumpActivated)
+            skillOne.SetActive(false);
 
+        if (waveSOs[listCounter].isDashActivated)
+            skillTwo.SetActive(false);
+
+        if (waveSOs[listCounter].isGlideActivated)
+            skillThree.SetActive(false);
     }
 
 }
