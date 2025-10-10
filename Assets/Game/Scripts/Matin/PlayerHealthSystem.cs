@@ -156,6 +156,7 @@ public class PlayerHealthSystem : MonoBehaviour
         // check for shooter enemy (example: BirdEnemy marker component)
         if (other.TryGetComponent<ShooterEnemy>(out ShooterEnemy ShooterEnemy))
         {
+            uIManager.Damage();
             Debug.Log($"[HealthSystem] Collision with BirdEnemy detected at {hitPoint}. Scheduling shooter collision damage.");
             ApplyDamageInternal(DamageType.ShooterCollision, hitPoint, true, shooterDamageDelay, false);
             return;
@@ -164,9 +165,9 @@ public class PlayerHealthSystem : MonoBehaviour
         // check for projectile
         if (other.TryGetComponent<BulletEnemy>(out BulletEnemy BulletEnemy))
         {
+            uIManager.Damage();
             Debug.Log($"[HealthSystem] Collision with Projectile detected at {hitPoint}. Applying projectile damage.");
             ApplyDamageInternal(DamageType.Projectile, hitPoint, false, 0f, false);
-            uIManager.Damage();
             // optional: let projectile handle its destruction
             return;
         }

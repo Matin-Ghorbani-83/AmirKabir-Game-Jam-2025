@@ -17,9 +17,16 @@ public class BulletEnemy : MonoBehaviour
     void Update()
     {
         if (right)
+        {
             transform.Translate(Vector2.left * sOEnemy.BulletSpeed * Time.deltaTime);
+            transform.localScale = new Vector3(transform.localScale.x, transform.localScale.y, transform.localScale.z);
+        }
         else
+        {
             transform.Translate(Vector2.right * sOEnemy.BulletSpeed * Time.deltaTime);
+            transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
+        }
+            
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
