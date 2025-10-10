@@ -96,6 +96,7 @@ public class PlayerController : MonoBehaviour
     public bool isDobleJumpActivated;
     public bool isGlideActivated;
     public bool isDashActivated;
+    public bool isClimbActivated;
     public bool isKeyBoardStatic =false;
 
     public bool isChangingInputs;
@@ -470,32 +471,36 @@ public class PlayerController : MonoBehaviour
     }
     private void CheckForLedge()
     {
-        if ((ledgeDetected && canGrabLedge))
+        if (isClimbActivated)
         {
+            if ((ledgeDetected && canGrabLedge))
+            {
 
-            canGrabLedge = false;
-            isGliding = false;
+                canGrabLedge = false;
+                isGliding = false;
 
 
-            climbBegunPosition = GrabPosition;
-            climbOverPosition = SwitchPosition;
+                climbBegunPosition = GrabPosition;
+                climbOverPosition = SwitchPosition;
 
-            canClimb = true;
+                canClimb = true;
+            }
+
+            if (canClimb)
+            {
+                rb.velocity = new Vector3(0, 0, 0);
+                transform.position = climbBegunPosition;
+
+                isGrounded = false;
+                isGliding = false;
+                isDashing = false;
+
+
+                OnPlayerGrab?.Invoke(this, EventArgs.Empty);
+
+            }
         }
-
-        if (canClimb)
-        {
-            rb.velocity = new Vector3(0, 0, 0);
-            transform.position = climbBegunPosition;
-
-            isGrounded = false;
-            isGliding = false;
-            isDashing = false;
-
-
-            OnPlayerGrab?.Invoke(this, EventArgs.Empty);
-
-        }
+        
     }
     public void LedgeClimbOver()
     {
@@ -529,8 +534,8 @@ public class PlayerController : MonoBehaviour
 
         if (isChangingInputs)
         {
-            int countdown = 7;
-            changeInputText.gameObject.SetActive(true);
+            int countdown = 10;
+            //changeInputText.gameObject.SetActive(true);
             CurrentKey.gameObject.SetActive(true);
             while (countdown > 0)
             {
@@ -540,14 +545,14 @@ public class PlayerController : MonoBehaviour
             }
             if (countdown <= 0)
             {
-                changeInputText.gameObject.SetActive(false);
+                //changeInputText.gameObject.SetActive(false);
                 jumpKey = randomKey[randkey];
                 CurrentKey.text = randomKey[randkey].ToString();
             }
         }
         else
         {
-            changeInputText.gameObject.SetActive(false) ;
+            //changeInputText.gameObject.SetActive(false) ;
             CurrentKey.gameObject.SetActive(false) ;
         }
 
@@ -556,7 +561,7 @@ public class PlayerController : MonoBehaviour
         if(isChangingInputs)
         {   
             
-            changeInputText.gameObject.SetActive(true);
+            //changeInputText.gameObject.SetActive(true);
         }
         StartCoroutine(ChangeInpuuts());
         
