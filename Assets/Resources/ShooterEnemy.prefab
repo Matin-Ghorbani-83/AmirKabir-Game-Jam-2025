@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 5852968293766168262}
   - component: {fileID: 6645604723406051573}
   - component: {fileID: 5718718088693340332}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: ShooterEnemy
   m_TagString: ShooterEnemy
   m_Icon: {fileID: 0}
@@ -221,7 +221,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8568426487256072130}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: BulletPosition
   m_TagString: Untagged
   m_Icon: {fileID: 7174288486110832750, guid: 0000000000000000d000000000000000, type: 0}

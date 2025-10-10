@@ -16,18 +16,18 @@ MonoBehaviour:
   minDestroyInterval: 3
   maxDestroyInterval: 6
   respawnDelay: 1
-  minimumCountLeft: 1
-  maximumCountLeft: 3
-  maxSpawnTimeLeft: 4
-  minSpawnTimeLeft: 2
-  minimumCountRight: 1
-  maximumCountRight: 3
-  maxSpawnTimeRight: 4
-  minSpawnTimeRight: 2
-  minimumCountUp: 1
-  maximumCountUp: 3
-  maxSpawnTimeUp: 4
-  minSpawnTimeUp: 2
+  minimumCountLeft: 0
+  maximumCountLeft: 1
+  maxSpawnTimeLeft: 3
+  minSpawnTimeLeft: 1
+  minimumCountRight: 0
+  maximumCountRight: 1
+  maxSpawnTimeRight: 3
+  minSpawnTimeRight: 1
+  minimumCountUp: 0
+  maximumCountUp: 1
+  maxSpawnTimeUp: 3
+  minSpawnTimeUp: 1
   enableSpawning: 0
   minSpawnTime: 0
   maxSpawnTime: 0
@@ -39,6 +39,8 @@ MonoBehaviour:
   isDobleJumpActivated: 0
   isGlideActivated: 0
   isDashActivated: 1
-  backGround: {fileID: 3098904857822067927, guid: 07e8d601346f48847829e6fdf914ad94, type: 3}
-  givenSkillDiscriptionstxt: ' '
-  nextUnstableThingtxt: ' '
+  backGround: {fileID: 1585894125897412628, guid: 0e47fefad9e34da42b66961b445ba502, type: 3}
+  givenSkillDiscriptionstxt: Basic Movement
+  nextUnstableThingtxt: 'Unstable: Random Input'
+  waveName: Wave 1
+  infinit: 0

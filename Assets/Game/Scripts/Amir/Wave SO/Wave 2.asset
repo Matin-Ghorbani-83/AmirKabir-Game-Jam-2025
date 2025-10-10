@@ -17,17 +17,17 @@ MonoBehaviour:
   maxDestroyInterval: 3
   respawnDelay: 2
   minimumCountLeft: 0
-  maximumCountLeft: 0
-  maxSpawnTimeLeft: 0
-  minSpawnTimeLeft: 0
+  maximumCountLeft: 1
+  maxSpawnTimeLeft: 3
+  minSpawnTimeLeft: 1
   minimumCountRight: 0
-  maximumCountRight: 0
-  maxSpawnTimeRight: 0
-  minSpawnTimeRight: 0
+  maximumCountRight: 1
+  maxSpawnTimeRight: 3
+  minSpawnTimeRight: 1
   minimumCountUp: 0
-  maximumCountUp: 0
-  maxSpawnTimeUp: 0
-  minSpawnTimeUp: 0
+  maximumCountUp: 1
+  maxSpawnTimeUp: 3
+  minSpawnTimeUp: 1
   enableSpawning: 1
   minSpawnTime: 1
   maxSpawnTime: 5
@@ -39,6 +39,8 @@ MonoBehaviour:
   isDobleJumpActivated: 1
   isGlideActivated: 0
   isDashActivated: 1
-  backGround: {fileID: 3098904857822067927, guid: 07e8d601346f48847829e6fdf914ad94, type: 3}
-  givenSkillDiscriptionstxt: Dash
-  nextUnstableThingtxt: Platfrom
+  backGround: {fileID: 1585894125897412628, guid: 4478aef0fcb2b2644b1298d1f95043bf, type: 3}
+  givenSkillDiscriptionstxt: Duoble jump unlocked (Space)
+  nextUnstableThingtxt: 'Unstable: Platfrom'
+  waveName: Wave 2
+  infinit: 0

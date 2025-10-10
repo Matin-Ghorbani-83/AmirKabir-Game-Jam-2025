@@ -70,7 +70,7 @@ public class ShooterEnemy : MonoBehaviour, IEnemy
 
                 if (!arrive)
                 {
-                    transform.position = Vector2.Lerp(transform.position, new Vector2(transform.position.x, SpawnCycleManager.instance.GetRandomUndestroyedPlatformTransformForMohamadAmin().position.y), iSpeed * Time.deltaTime);
+                    transform.position = Vector2.Lerp(transform.position, new Vector2(transform.position.x, SpawnCycleManager.instance.GetRandomUndestroyedPlatformTransformForMohamadAmin().position.y + 1f), iSpeed * Time.deltaTime);
                 }
                 else
                 {

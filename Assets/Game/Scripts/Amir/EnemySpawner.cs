@@ -38,11 +38,13 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] bool randomEnemySpawning = false;
     [SerializeField] bool randomEnemyMovment = false;
     [SerializeField] bool randomEnemySpawnLocation = false;
+    [SerializeField] bool top = false;
 
     [Header("Spacing / Physics (2D)")]
     [SerializeField, Min(0f)] float minDistanceBetweenEnemies = 1f; // قابل تنظیم از اینسپکتور
     [SerializeField, Min(0f)] float enemyRadius = 0.5f; // نصفِ شعاعی که می‌خوای برای چک فیزیکی استفاده کنی
 
+    EnemyMovementType finalMovementType;
     void Start()
     {
         StartCoroutine(StartSpawning());
@@ -92,9 +94,19 @@ public class EnemySpawner : MonoBehaviour
                 ? (EnemyType)Random.Range(0, System.Enum.GetValues(typeof(EnemyType)).Length)
                 : enemyType;
 
-            EnemyMovementType finalMovementType = randomEnemyMovment
+            if (top)
+            {
+                finalMovementType = randomEnemyMovment
                 ? (EnemyMovementType)Random.Range(0, 3) // <-- برگشت به Random.Range(0, 3) طبق خواست تو
                 : enemyMovementType;
+            }
+            else
+            {
+                finalMovementType = randomEnemyMovment
+                ? (EnemyMovementType)Random.Range(0, 2) // <-- برگشت به Random.Range(0, 3) طبق خواست تو
+                : enemyMovementType;
+            }
+            
 
             // اگر خواستی مکان اسپاون رو رندم یا ثابت بسازی (فیلد randomEnemySpawnLocation)
             if (!randomEnemySpawnLocation)
@@ -123,7 +135,7 @@ public class EnemySpawner : MonoBehaviour
         float maxX = Mathf.Max(topBound.position.x + spawnJitterPosettive, downBound.position.x + spawnJitterNegetive);
 
         float y = (spawnPointType == SpawnPointType.Side) ? Random.Range(minY, maxY) : transform.position.y;
-        float x = (spawnPointType != SpawnPointType.Side) ? Random.Range(minX, maxX) : transform.position.x;
+        float x = (spawnPointType == SpawnPointType.Top) ? Random.Range(minX, maxX) : transform.position.x;
 
         return new Vector2(x, y);
     }

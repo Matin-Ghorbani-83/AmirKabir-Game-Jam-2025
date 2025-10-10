@@ -18,11 +18,9 @@ public class GameManager : MonoBehaviour
     [SerializeField] EnemySpawner enemySpawnerUp;
     [SerializeField] StaticPlatformSpawner staticPlatformSpawner;
     [SerializeField] GameObject changePanel;
-    [SerializeField] GameObject skillOne;
-    [SerializeField] GameObject skillTwo;
-    [SerializeField] GameObject skillThree;
     [SerializeField] Text Abilitytext;
     [SerializeField] Text nextrandtext;
+    [SerializeField] Text wavwName;
     private GameObject backGround;
     private GameObject tempbg;
     [SerializeField] List<WaveSO> waveSOs;
@@ -31,9 +29,9 @@ public class GameManager : MonoBehaviour
     [Header("Timer Settings")]
     public Text timerText;           // Reference to UI TextMeshPro
     [Tooltip("Interval between function calls in seconds")]
-    public float interval = 60f;         // Change in Inspector (e.g. 10 for 10 seconds)
+    public float interval;         // Change in Inspector (e.g. 10 for 10 seconds)
     [Tooltip("Maximum number of times the function should be called")]
-    public int maxCalls = 3;
+    public int maxCalls;
 
     [Header("Pause Settings")]
     [Tooltip("How long the game should pause (in seconds, real time)")]
@@ -42,29 +40,50 @@ public class GameManager : MonoBehaviour
     private float timer = 0f;            // Timer for UI
     private int callCount = 0;           // Number of times function was called
 
+    float timerLevel = 0;
+
     private void Awake()
     {
         instance = this;
+
     }
     private void Start()
     {
+        Time.timeScale = 0f;
+        timerLevel = interval;
         ChangeMode();
-        changePanel.SetActive(false);
+        changePanel.SetActive(true);
     }
     void Update()
     {
-        if (callCount < maxCalls)
+
+        if (callCount <= maxCalls)
         {
             // Update timer (this stops when timeScale = 0)
             timer += Time.deltaTime;
 
-            // Display timer in mm:ss format
-            if (timerText != null)
+            if (waveSOs[listCounter].infinit)
             {
-                int minutes = Mathf.FloorToInt(timer / 60f);
-                int seconds = Mathf.FloorToInt(timer % 60f);
-                timerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+                if (timerText != null)
+                {
+                    int minutes = Mathf.FloorToInt(timer / 60f);
+                    int seconds = Mathf.FloorToInt(timer % 60f);
+                    timerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+                }
             }
+            else
+            {
+                timerLevel -= Time.deltaTime;
+
+                int minutes = Mathf.FloorToInt(timerLevel / 60f);
+                int seconds = Mathf.FloorToInt(timerLevel % 60f);
+                timerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+
+                if (timerLevel <= 0)
+                    timerLevel = interval;
+            }
+
+            // Display timer in mm:ss format
 
             // Calculate next trigger time based on current interval
             float nextCallTime = (callCount + 1) * Mathf.Max(0.0001f, interval);
@@ -72,7 +91,8 @@ public class GameManager : MonoBehaviour
             // If it's time to trigger
             if (timer >= nextCallTime)
             {
-                CallFunctionOnce();
+                if (!waveSOs[listCounter].infinit)
+                    CallFunctionOnce();
             }
         }
     }
@@ -85,28 +105,33 @@ public class GameManager : MonoBehaviour
 
         // Put your custom code here...
         ChangeMode();
-       
+
         changePanel.SetActive(true);
         // Pause game for specified duration
-        StartCoroutine(PauseGameForSeconds(pauseDuration));
+        PauseGameForSeconds();
+
     }
 
-    private IEnumerator PauseGameForSeconds(float seconds)
+    private void PauseGameForSeconds()
     {
         Time.timeScale = 0f;  // Pause game
-        yield return new WaitForSecondsRealtime(seconds);
-        Time.timeScale = 1f;
+    }
+
+    public void Continue()
+    {
         OnWaveChanged?.Invoke(this, EventArgs.Empty);
         changePanel.SetActive(false);// Resume game
+        Time.timeScale = 1f;
     }
 
     void ChangeMode()
     {
         OnWaveChanged?.Invoke(this, EventArgs.Empty);
         DestroyByTagAll.instance.DestroyAllWithTwoTags();
-        listCounter++;
 
-        changeUI();
+        if (listCounter < maxCalls)
+            listCounter++;
+
 
         playerController.isDobleJumpActivated = waveSOs[listCounter].isDobleJumpActivated;
         playerController.isDashActivated = waveSOs[listCounter].isDashActivated;
@@ -136,7 +161,7 @@ public class GameManager : MonoBehaviour
         enemySpawnerright.maxSpawnTime = waveSOs[listCounter].maxSpawnTimeRight;
         enemySpawnerright.minSpawnTime = waveSOs[listCounter].minSpawnTimeRight;
 
-        enemySpawnerUp.maximumCount = waveSOs[listCounter].minimumCountUp;
+        enemySpawnerUp.maximumCount = waveSOs[listCounter].maximumCountUp;
         enemySpawnerUp.minimumCount = waveSOs[listCounter].minimumCountUp;
         enemySpawnerUp.maxSpawnTime = waveSOs[listCounter].maxSpawnTimeUp;
         enemySpawnerUp.minSpawnTime = waveSOs[listCounter].minSpawnTimeUp;
@@ -149,30 +174,18 @@ public class GameManager : MonoBehaviour
 
         if (tempbg != null)
         {
-            Destroy(tempbg );
+            Destroy(tempbg);
             backGround = waveSOs[listCounter].backGround;
             tempbg = Instantiate(backGround);
         }
         else
         {
             backGround = waveSOs[listCounter].backGround;
-             tempbg = Instantiate(backGround);
+            tempbg = Instantiate(backGround);
         }
 
         Abilitytext.text = waveSOs[listCounter].givenSkillDiscriptionstxt;
         nextrandtext.text = waveSOs[listCounter].nextUnstableThingtxt;
+        wavwName.text = waveSOs[listCounter].waveName;
     }
-
-    void changeUI()
-    {
-        if (waveSOs[listCounter].isDobleJumpActivated)
-            skillOne.SetActive(false);
-
-        if (waveSOs[listCounter].isDashActivated)
-            skillTwo.SetActive(false);
-
-        if (waveSOs[listCounter].isGlideActivated)
-            skillThree.SetActive(false);
-    }
-
 }

@@ -19,13 +19,13 @@ public class PlayerTransromSpawner : MonoBehaviour
         PlayerHealthSystem.instance.OnPlayerDied += Instance_OnPlayerDied;
         PlayerHealthSystem.instance.OnRequestRespawn += Instance_OnRequestRespawn;
         PlayerHealthSystem.instance.lastSafeRespawnPos = transform.position;
-        PlayerHealthSystem.instance.RegisterSafeRespawnPosition(transform.position + new Vector3(0, 5, 0));
+        PlayerHealthSystem.instance.RegisterSafeRespawnPosition(transform.position + new Vector3(0, 0.3f, 0));
     }
 
     private void Instance_OnRequestRespawn(Vector3 arg1, PlayerHealthSystem.DamageType arg2)
     {
         PlayerHealthSystem.instance.lastSafeRespawnPos = transform.position;
-        PlayerHealthSystem.instance.RegisterSafeRespawnPosition(transform.position + new Vector3(0, 5, 0));
+        PlayerHealthSystem.instance.RegisterSafeRespawnPosition(transform.position + new Vector3(0, 0.3f, 0));
         Instantiate(transfromGameObject, transform.position, Quaternion.identity);
     }
 
@@ -35,12 +35,12 @@ public class PlayerTransromSpawner : MonoBehaviour
 
 
         PlayerHealthSystem.instance.lastSafeRespawnPos = transform.position;
-        PlayerHealthSystem.instance.RegisterSafeRespawnPosition(transform.position + new Vector3(0, 5, 0));
+        PlayerHealthSystem.instance.RegisterSafeRespawnPosition(transform.position + new Vector3(0, 0.3f, 0));
         Instantiate(transfromGameObject, transform.position, Quaternion.identity);
 
         if (PlayerController.instance != null)
         {
-            Vector3 respawnPos = transform.position + new Vector3(0, 5f, 0); // همون جایی که پلتفرم رو ثبت کردی
+            Vector3 respawnPos = transform.position + new Vector3(0, 0.3f, 0); // همون جایی که پلتفرم رو ثبت کردی
                                                                              // Teleport the player
             PlayerController.instance.transform.position = respawnPos;
 
@@ -63,6 +63,6 @@ public class PlayerTransromSpawner : MonoBehaviour
     {
         PlayerHealthSystem.instance.lastSafeRespawnPos = transform.position;
         Instantiate(transfromGameObject, transform.position, Quaternion.identity);
-        PlayerHealthSystem.instance.RegisterSafeRespawnPosition(transform.position + new Vector3(0, 5, 0));
+        PlayerHealthSystem.instance.RegisterSafeRespawnPosition(transform.position + new Vector3(0, 0.3f, 0));
     }
 }

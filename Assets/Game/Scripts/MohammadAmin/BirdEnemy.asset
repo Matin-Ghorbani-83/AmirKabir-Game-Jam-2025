@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b05720e4e98f0264f8079241eb5be8c0, type: 3}
   m_Name: BirdEnemy
   m_EditorClassIdentifier: 
-  Speed: 5
-  KnockbackForce: {x: 10, y: 4}
+  Speed: 4
+  KnockbackForce: {x: 10, y: 6}

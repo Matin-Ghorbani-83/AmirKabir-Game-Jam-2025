@@ -97,11 +97,11 @@ public class PlayerController : MonoBehaviour
     public bool isGlideActivated;
     public bool isDashActivated;
     public bool isClimbActivated;
-    public bool isKeyBoardStatic =false;
+    public bool isKeyBoardStatic = false;
 
     public bool isChangingInputs;
     public KeyCode jumpKey = KeyCode.Space;
-    private KeyCode[] randomKey = { KeyCode.Space, KeyCode.V, KeyCode.B, KeyCode.N };
+    private KeyCode[] randomKey = { KeyCode.Space, KeyCode.V, KeyCode.N };
     [SerializeField] Text changeInputText;
     [SerializeField] Text CurrentKey;
     private void Awake()
@@ -127,6 +127,8 @@ public class PlayerController : MonoBehaviour
         if ((isKeyBoardStatic))
         {
             jumpKey = KeyCode.Space;
+            CurrentKey.gameObject.SetActive(false);
+            changeInputText.gameObject.SetActive(false);
         }
         HandleInput();
         GroundCheck();
@@ -500,7 +502,7 @@ public class PlayerController : MonoBehaviour
 
             }
         }
-        
+
     }
     public void LedgeClimbOver()
     {
@@ -534,37 +536,43 @@ public class PlayerController : MonoBehaviour
 
         if (isChangingInputs)
         {
-            int countdown = 10;
-            //changeInputText.gameObject.SetActive(true);
+            int countdown = UnityEngine.Random.Range(7, 15);
+            changeInputText.gameObject.SetActive(true);
             CurrentKey.gameObject.SetActive(true);
             while (countdown > 0)
             {
-                changeInputText.text = "Jump Is Going To Change to " + randomKey[randkey] + " in " + countdown.ToString(); 
-                yield return new WaitForSeconds(1f);       
+                if (countdown <= 3)
+                    changeInputText.text = countdown.ToString();
+                yield return new WaitForSeconds(1f);
                 countdown--;
             }
             if (countdown <= 0)
             {
-                //changeInputText.gameObject.SetActive(false);
+                changeInputText.text = "";
+                changeInputText.gameObject.SetActive(false);
                 jumpKey = randomKey[randkey];
-                CurrentKey.text = randomKey[randkey].ToString();
+                CurrentKey.text = "Jump : " + randomKey[randkey];
             }
         }
         else
         {
-            //changeInputText.gameObject.SetActive(false) ;
-            CurrentKey.gameObject.SetActive(false) ;
+            changeInputText.text = "";
+            changeInputText.gameObject.SetActive(false);
+            CurrentKey.gameObject.SetActive(false);
+            jumpKey = randomKey[0];
+            CurrentKey.text = "Jump : Space";
         }
 
-            yield return new WaitForSeconds(2);
+        yield return new WaitForSeconds(2);
 
-        if(isChangingInputs)
-        {   
-            
-            //changeInputText.gameObject.SetActive(true);
+        if (isChangingInputs)
+        {
+
+            changeInputText.gameObject.SetActive(true);
         }
+
         StartCoroutine(ChangeInpuuts());
-        
+
     }
 
 

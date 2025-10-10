@@ -12,33 +12,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc529e68b0e4e944c9c8f018841e5986, type: 3}
   m_Name: Wave 3
   m_EditorClassIdentifier: 
-  initialDelay: 0
-  minDestroyInterval: 0
-  maxDestroyInterval: 0
-  respawnDelay: 0
+  initialDelay: 1
+  minDestroyInterval: 3
+  maxDestroyInterval: 3
+  respawnDelay: 2
   minimumCountLeft: 0
-  maximumCountLeft: 0
-  maxSpawnTimeLeft: 0
-  minSpawnTimeLeft: 0
+  maximumCountLeft: 2
+  maxSpawnTimeLeft: 3
+  minSpawnTimeLeft: 1
   minimumCountRight: 0
-  maximumCountRight: 0
-  maxSpawnTimeRight: 0
-  minSpawnTimeRight: 0
+  maximumCountRight: 2
+  maxSpawnTimeRight: 3
+  minSpawnTimeRight: 1
   minimumCountUp: 0
-  maximumCountUp: 0
-  maxSpawnTimeUp: 0
-  minSpawnTimeUp: 0
+  maximumCountUp: 3
+  maxSpawnTimeUp: 3
+  minSpawnTimeUp: 1
   enableSpawning: 1
   minSpawnTime: 1
   maxSpawnTime: 5
-  exactSpawnTime: 1
-  inputChanging: 1
+  exactSpawnTime: 5
+  inputChanging: 0
   platformChanging: 1
   staticPlatform: 0
   staticKeyBoard: 0
   isDobleJumpActivated: 1
   isGlideActivated: 1
   isDashActivated: 1
-  backGround: {fileID: 3098904857822067927, guid: 07e8d601346f48847829e6fdf914ad94, type: 3}
-  givenSkillDiscriptionstxt: Glide
-  nextUnstableThingtxt: Input And Platfroms
+  backGround: {fileID: 1585894125897412628, guid: e1b8667709dc94042b3173de119a1357, type: 3}
+  givenSkillDiscriptionstxt: Glide unlocked (Hold Space)
+  nextUnstableThingtxt: 'Unstable: Platfrom'
+  waveName: Wave 3
+  infinit: 0

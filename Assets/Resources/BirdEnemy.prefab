@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 3420294392345382350}
   - component: {fileID: -2730890093836672449}
   - component: {fileID: 3356783972999634626}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: BirdEnemy
   m_TagString: BirdEnemy
   m_Icon: {fileID: 0}
@@ -210,7 +210,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5437903034372691170}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Arrow
   m_TagString: Untagged
   m_Icon: {fileID: 3443629218296621865, guid: 0000000000000000d000000000000000, type: 0}

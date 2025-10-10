@@ -52,6 +52,9 @@ public class WaveSO : ScriptableObject
     public GameObject backGround;
     public string givenSkillDiscriptionstxt;
     public string nextUnstableThingtxt;
+    public string waveName;
 
-    
+    public bool infinit = false;
+
+
 }

@@ -408,6 +408,7 @@ public class BirdEnemy : MonoBehaviour, IEnemy
         if (collision.gameObject.CompareTag("Player"))
         {
             Rigidbody2D playerRb = collision.gameObject.GetComponent<Rigidbody2D>();
+            GetComponent<CircleCollider2D>().enabled = false;
 
             switch (spawnPointType)
             {
