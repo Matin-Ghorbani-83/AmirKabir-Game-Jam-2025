@@ -19,6 +19,10 @@ public class PlayerController : MonoBehaviour
     public event EventHandler OnPlayerGlideStart;
     public event EventHandler OnPlayerGlideEnd;
 
+    [SerializeField]AudioSource m_AudioSource;
+
+    [SerializeField] AudioClip countDownClip;
+
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 6f;
     [SerializeField] private float accel = 30f;
@@ -526,11 +530,11 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-
+    bool oncePlaye=false;
     IEnumerator ChangeInpuuts()
     {
         int randkey = UnityEngine.Random.Range(0, randomKey.Length);
-
+        
         // شمارش معکوس 3 ثانیه‌ای
 
 
@@ -541,13 +545,24 @@ public class PlayerController : MonoBehaviour
             CurrentKey.gameObject.SetActive(true);
             while (countdown > 0)
             {
-                if (countdown <= 3)
+                if (countdown <= 4)
+                {
                     changeInputText.text = countdown.ToString();
+
+                    if(oncePlaye == false)
+                    {
+                        m_AudioSource.Play();
+                        oncePlaye = true;
+                    }
+                   
+                }
+                   
                 yield return new WaitForSeconds(1f);
                 countdown--;
             }
             if (countdown <= 0)
             {
+                oncePlaye=false;    
                 changeInputText.text = "";
                 changeInputText.gameObject.SetActive(false);
                 jumpKey = randomKey[randkey];

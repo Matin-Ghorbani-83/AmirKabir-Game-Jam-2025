@@ -25,14 +25,14 @@ MonoBehaviour:
   maxSpawnTimeRight: 3
   minSpawnTimeRight: 1
   minimumCountUp: 0
-  maximumCountUp: 3
-  maxSpawnTimeUp: 3
+  maximumCountUp: 2
+  maxSpawnTimeUp: 2
   minSpawnTimeUp: 1
   enableSpawning: 1
   minSpawnTime: 1
   maxSpawnTime: 5
   exactSpawnTime: 5
-  inputChanging: 0
+  inputChanging: 1
   platformChanging: 1
   staticPlatform: 0
   staticKeyBoard: 0

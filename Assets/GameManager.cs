@@ -61,7 +61,7 @@ public class GameManager : MonoBehaviour
         {
             // Update timer (this stops when timeScale = 0)
             timer += Time.deltaTime;
-
+          
             if (waveSOs[listCounter].infinit)
             {
                 if (timerText != null)
@@ -69,6 +69,9 @@ public class GameManager : MonoBehaviour
                     int minutes = Mathf.FloorToInt(timer / 60f);
                     int seconds = Mathf.FloorToInt(timer % 60f);
                     timerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+                   
+                
+                    PlayerPrefs.SetString("Timer", timerText.text);
                 }
             }
             else
