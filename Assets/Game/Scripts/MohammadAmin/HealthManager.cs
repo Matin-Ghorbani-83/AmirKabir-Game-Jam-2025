@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -8,6 +9,7 @@ public class HealthManager : MonoBehaviour
     [SerializeField] float reviveTime;
     [SerializeField] GameObject[] hearts;
     [SerializeField] ParticleSystem particle;
+    [SerializeField] GameObject loseUI;
     bool firstHealth = true;
     bool nullHealth = false;
     float alpha = 0f;
@@ -18,6 +20,11 @@ public class HealthManager : MonoBehaviour
     }
 
     private void die(Vector3 obj)
+    {
+        loseUI.SetActive(true);
+    }
+
+    public void lose()
     {
         SceneManager.LoadScene(0);
     }
