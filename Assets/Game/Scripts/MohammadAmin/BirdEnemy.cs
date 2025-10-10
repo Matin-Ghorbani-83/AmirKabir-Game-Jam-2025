@@ -50,9 +50,9 @@ public class BirdEnemy : MonoBehaviour, IEnemy
                 break;
             case SpawnPointType.Top:
                 if (top)
-                    point.position = new Vector3(transform.position.x, -4f + transform.position.y, 0f);
+                    point.position = new Vector3(transform.position.x, -3f + transform.position.y, 0f);
                 else
-                    point.position = new Vector3(transform.position.x, 4f + transform.position.y, 0f);
+                    point.position = new Vector3(transform.position.x, 3f + transform.position.y, 0f);
                 break;
         }
     }

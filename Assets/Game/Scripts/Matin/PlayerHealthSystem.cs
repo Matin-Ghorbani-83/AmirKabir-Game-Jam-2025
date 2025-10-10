@@ -86,10 +86,10 @@ public class PlayerHealthSystem : MonoBehaviour
         // process trigger collisions (projectiles or trigger-type enemies)
         ProcessCollision(other.gameObject, other.ClosestPoint(transform.position));
 
-        if (other.gameObject.CompareTag("Bullet"))
-        {
-            uIManager.Damage();
-        }
+        //if (other.gameObject.CompareTag("Bullet") || other.gameObject.CompareTag("Ground"))
+        //{
+            
+        //}
     }
 
     private void OnCollisionEnter2D(Collision2D col)
@@ -166,6 +166,7 @@ public class PlayerHealthSystem : MonoBehaviour
         {
             Debug.Log($"[HealthSystem] Collision with Projectile detected at {hitPoint}. Applying projectile damage.");
             ApplyDamageInternal(DamageType.Projectile, hitPoint, false, 0f, false);
+            uIManager.Damage();
             // optional: let projectile handle its destruction
             return;
         }
@@ -173,6 +174,7 @@ public class PlayerHealthSystem : MonoBehaviour
         // you can add more collision checks (spikes, traps...) here
         if (other.TryGetComponent<FallGround>(out FallGround fallGround))
         {
+            uIManager.Damage();
             NotifyFallen();
             return;
         }

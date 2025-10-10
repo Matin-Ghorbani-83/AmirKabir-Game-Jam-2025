@@ -542,7 +542,7 @@ public class PlayerController : MonoBehaviour
             {
                 changeInputText.gameObject.SetActive(false);
                 jumpKey = randomKey[randkey];
-                CurrentKey.text = "Now key is: " + randomKey[randkey];
+                CurrentKey.text = randomKey[randkey].ToString();
             }
         }
         else
