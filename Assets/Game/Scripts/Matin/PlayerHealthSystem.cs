@@ -38,7 +38,7 @@ public class PlayerHealthSystem : MonoBehaviour
     private bool isInvincible = false;
     private bool isRegenRunning = false;
 
-    private Vector3 lastSafeRespawnPos = Vector3.zero;
+    public Vector3 lastSafeRespawnPos = Vector3.zero;
 
     // coroutine handles
     private Coroutine invincibleCoroutine;
@@ -146,12 +146,12 @@ public class PlayerHealthSystem : MonoBehaviour
         if (other == gameObject) return;
 
         // platform registration (layer mask)
-        if (((1 << other.layer) & platformLayerMask) != 0)
-        {
-            // register the player's current feet position as safe respawn (caller may override)
-            RegisterSafeRespawnPosition(transform.position);
-            return;
-        }
+        //if (((1 << other.layer) & platformLayerMask) != 0)
+        //{
+        //    // register the player's current feet position as safe respawn (caller may override)
+        //    RegisterSafeRespawnPosition(transform.position);
+        //    return;
+        //}
 
         // check for shooter enemy (example: BirdEnemy marker component)
         if (other.TryGetComponent<ShooterEnemy>(out ShooterEnemy ShooterEnemy))
@@ -162,7 +162,7 @@ public class PlayerHealthSystem : MonoBehaviour
         }
 
         // check for projectile
-        if (other.TryGetComponent<Projectile>(out Projectile proj))
+        if (other.TryGetComponent<BulletEnemy>(out BulletEnemy BulletEnemy))
         {
             Debug.Log($"[HealthSystem] Collision with Projectile detected at {hitPoint}. Applying projectile damage.");
             ApplyDamageInternal(DamageType.Projectile, hitPoint, false, 0f, false);

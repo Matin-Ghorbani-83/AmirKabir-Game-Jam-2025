@@ -96,7 +96,7 @@ public class PlayerController : MonoBehaviour
     public bool isDobleJumpActivated;
     public bool isGlideActivated;
     public bool isDashActivated;
-
+    public bool isKeyBoardStatic =false;
 
     public bool isChangingInputs;
     public KeyCode jumpKey = KeyCode.Space;
@@ -123,6 +123,10 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        if ((isKeyBoardStatic))
+        {
+            jumpKey = KeyCode.Space;
+        }
         HandleInput();
         GroundCheck();
         HandleDashTimers();
@@ -525,7 +529,7 @@ public class PlayerController : MonoBehaviour
 
         if (isChangingInputs)
         {
-            int countdown = 3;
+            int countdown = 7;
             changeInputText.gameObject.SetActive(true);
             CurrentKey.gameObject.SetActive(true);
             while (countdown > 0)

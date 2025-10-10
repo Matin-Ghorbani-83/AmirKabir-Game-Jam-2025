@@ -113,7 +113,7 @@ BoxCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.18229961, y: 0.33850408}
+  m_Offset: {x: 0.18229961, y: 0.6783674}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -124,7 +124,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 1.6524696, y: 1.8495183}
+  m_Size: {x: 1.6524696, y: 1.1697917}
   m_EdgeRadius: 0
 --- !u!50 &2922106642323391284
 Rigidbody2D:
@@ -584,8 +584,11 @@ MonoBehaviour:
   isDobleJumpActivated: 1
   isGlideActivated: 1
   isDashActivated: 1
+  isKeyBoardStatic: 0
   isChangingInputs: 0
   jumpKey: 32
+  changeInputText: {fileID: 0}
+  CurrentKey: {fileID: 0}
 --- !u!114 &7805712952929944746
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -622,6 +625,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   uIManager: {fileID: 0}
+  lastSafeRespawnPos: {x: 0, y: 0, z: 0}
 --- !u!114 &2044949909010999200
 MonoBehaviour:
   m_ObjectHideFlags: 0

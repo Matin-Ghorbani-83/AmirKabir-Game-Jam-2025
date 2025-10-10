@@ -16,7 +16,26 @@ MonoBehaviour:
   minDestroyInterval: 0
   maxDestroyInterval: 0
   respawnDelay: 0
-  minimumCount: 0
-  maximumCount: 0
-  maxSpawnTime: 0
-  minSpawnTime: 0
+  minimumCountLeft: 0
+  maximumCountLeft: 0
+  maxSpawnTimeLeft: 0
+  minSpawnTimeLeft: 0
+  minimumCountRight: 0
+  maximumCountRight: 0
+  maxSpawnTimeRight: 0
+  minSpawnTimeRight: 0
+  minimumCountUp: 0
+  maximumCountUp: 0
+  maxSpawnTimeUp: 0
+  minSpawnTimeUp: 0
+  exactSpawnTime: 1
+  inputChanging: 1
+  platformChanging: 1
+  staticPlatform: 0
+  staticKeyBoard: 0
+  isDobleJumpActivated: 1
+  isGlideActivated: 1
+  isDashActivated: 1
+  backGround: {fileID: 0}
+  givenSkillDiscriptionstxt: 
+  nextUnstableThingtxt: 
