@@ -5,15 +5,22 @@ public class StaticPlatformSpawner : MonoBehaviour
     [Header("Settings")]
     public bool spawnActive; // اینو از Inspector تیک می‌زنی یا برمی‌داری
     public GameObject prefab; // چیزی که می‌خوای اسپاون شه
-    public Transform spawnPointA;
-    public Transform spawnPointB;
+    public Transform spawnPointTopRight;
+    public Transform spawnPointTopLeft;
+    public Transform spawnPointBottomRight;
+    public Transform spawnPointBottomLeft;
 
-    private GameObject spawnedA;
-    private GameObject spawnedB;
+    private GameObject spawnedTopRight;
+    private GameObject spawnedTopLeft;
+
+    private GameObject spawnedBottomRight;
+    private GameObject spawnedBottomLeft;
+
     private bool lastState;
 
     void Update()
     {
+        Debug.Log(spawnActive);
         // فقط وقتی وضعیت تیک تغییر کرد (از true به false یا برعکس) اجرا کنه
         if (spawnActive != lastState)
         {
@@ -31,19 +38,43 @@ public class StaticPlatformSpawner : MonoBehaviour
 
     void SpawnObjects()
     {
-        if (prefab == null || spawnPointA == null || spawnPointB == null)
+        if (prefab == null || spawnPointTopRight == null || spawnPointTopLeft == null)
         {
             Debug.LogWarning("⚠️ Please assign prefab and spawn points!");
             return;
         }
 
-        spawnedA = Instantiate(prefab, spawnPointA.position, spawnPointA.rotation);
-        spawnedB = Instantiate(prefab, spawnPointB.position, spawnPointB.rotation);
+        spawnedTopRight = Instantiate(prefab, spawnPointTopRight.position, spawnPointTopRight.rotation);
+
+        spawnedTopLeft = Instantiate(prefab, spawnPointTopLeft.position, spawnPointTopLeft.rotation);
+
+
+        spawnedBottomRight = Instantiate(prefab, spawnPointBottomRight.position, spawnPointBottomRight.rotation);
+        spawnedBottomLeft = Instantiate(prefab, spawnPointBottomLeft.position, spawnPointBottomLeft.rotation);
+
     }
 
     void DestroyObjects()
     {
-        if (spawnedA != null) Destroy(spawnedA);
-        if (spawnedB != null) Destroy(spawnedB);
+        Debug.Log("Static ObjectsDestroy");
+
+        if (spawnedTopRight != null)
+        {
+
+            Destroy(spawnedTopRight);
+        }
+        if (spawnedTopLeft != null)
+        {
+
+            Destroy(spawnedTopLeft);
+        }
+        if(spawnedBottomRight != null)
+        {
+            Destroy (spawnedBottomRight);
+        }
+        if(spawnPointBottomLeft != null)
+        {
+            Destroy(spawnedBottomLeft);
+        }
     }
 }

@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc529e68b0e4e944c9c8f018841e5986, type: 3}
   m_Name: Wave 2
   m_EditorClassIdentifier: 
-  initialDelay: 0
-  minDestroyInterval: 0
-  maxDestroyInterval: 0
-  respawnDelay: 0
+  initialDelay: 1
+  minDestroyInterval: 3
+  maxDestroyInterval: 3
+  respawnDelay: 2
   minimumCountLeft: 0
   maximumCountLeft: 0
   maxSpawnTimeLeft: 0
@@ -28,14 +28,17 @@ MonoBehaviour:
   maximumCountUp: 0
   maxSpawnTimeUp: 0
   minSpawnTimeUp: 0
-  maxSpawnTimeforrail: 5
-  minSpawnTimeforrail: 1
+  enableSpawning: 1
+  minSpawnTime: 1
+  maxSpawnTime: 5
+  exactSpawnTime: 5
   inputChanging: 0
-  platformChanging: 0
+  platformChanging: 1
   staticPlatform: 0
-  isDobleJumpActivated: 0
+  staticKeyBoard: 1
+  isDobleJumpActivated: 1
   isGlideActivated: 0
-  isDashActivated: 0
+  isDashActivated: 1
   backGround: {fileID: 3098904857822067927, guid: 07e8d601346f48847829e6fdf914ad94, type: 3}
-  givenSkillDiscriptionstxt: TFHGDRRFHB
-  nextUnstableThingtxt: TERSHYSRESHRERE
+  givenSkillDiscriptionstxt: Dash
+  nextUnstableThingtxt: Platfrom

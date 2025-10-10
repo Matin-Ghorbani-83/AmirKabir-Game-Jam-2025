@@ -12,11 +12,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc529e68b0e4e944c9c8f018841e5986, type: 3}
   m_Name: Wave 4
   m_EditorClassIdentifier: 
-  initialDelay: 0
-  minDestroyInterval: 0
-  maxDestroyInterval: 0
-  respawnDelay: 0
-  minimumCount: 0
-  maximumCount: 0
-  maxSpawnTime: 0
-  minSpawnTime: 0
+  initialDelay: 1
+  minDestroyInterval: 3
+  maxDestroyInterval: 3
+  respawnDelay: 2
+  minimumCountLeft: 0
+  maximumCountLeft: 0
+  maxSpawnTimeLeft: 0
+  minSpawnTimeLeft: 0
+  minimumCountRight: 0
+  maximumCountRight: 0
+  maxSpawnTimeRight: 0
+  minSpawnTimeRight: 0
+  minimumCountUp: 0
+  maximumCountUp: 0
+  maxSpawnTimeUp: 0
+  minSpawnTimeUp: 0
+  maxSpawnTimeforrail: 5
+  minSpawnTimeforrail: 1
+  inputChanging: 1
+  platformChanging: 1
+  staticPlatform: 0
+  isDobleJumpActivated: 0
+  isGlideActivated: 0
+  isDashActivated: 0
+  backGround: {fileID: 0}
+  givenSkillDiscriptionstxt: 
+  nextUnstableThingtxt: 

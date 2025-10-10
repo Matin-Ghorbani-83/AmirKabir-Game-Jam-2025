@@ -31,13 +31,17 @@ public class WaveSO : ScriptableObject
     public float minSpawnTimeUp;
 
     [Header("Rail Enemy Settings")]
-    public float maxSpawnTimeforrail = 5f;
-    public float minSpawnTimeforrail = 1f;
+    public bool enableSpawning ;
+    public float minSpawnTime = 0f;
+    public float maxSpawnTime = 0f;
+    public float exactSpawnTime = 0f;
+
 
     [Header("Wave Compatibilitues")]
     public bool inputChanging;
     public bool platformChanging;
     public bool staticPlatform;
+    public bool staticKeyBoard;
 
 
     public bool isDobleJumpActivated;

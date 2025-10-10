@@ -16,26 +16,29 @@ MonoBehaviour:
   minDestroyInterval: 3
   maxDestroyInterval: 6
   respawnDelay: 1
-  minimumCountLeft: 0
-  maximumCountLeft: 0
-  maxSpawnTimeLeft: 0
-  minSpawnTimeLeft: 0
-  minimumCountRight: 0
-  maximumCountRight: 0
-  maxSpawnTimeRight: 0
-  minSpawnTimeRight: 0
-  minimumCountUp: 0
-  maximumCountUp: 0
-  maxSpawnTimeUp: 0
-  minSpawnTimeUp: 0
-  maxSpawnTimeforrail: 5
-  minSpawnTimeforrail: 1
+  minimumCountLeft: 1
+  maximumCountLeft: 3
+  maxSpawnTimeLeft: 4
+  minSpawnTimeLeft: 2
+  minimumCountRight: 1
+  maximumCountRight: 3
+  maxSpawnTimeRight: 4
+  minSpawnTimeRight: 2
+  minimumCountUp: 1
+  maximumCountUp: 3
+  maxSpawnTimeUp: 4
+  minSpawnTimeUp: 2
+  enableSpawning: 0
+  minSpawnTime: 0
+  maxSpawnTime: 0
+  exactSpawnTime: 0
   inputChanging: 1
-  platformChanging: 1
-  staticPlatform: 0
+  platformChanging: 0
+  staticPlatform: 1
+  staticKeyBoard: 0
   isDobleJumpActivated: 0
   isGlideActivated: 0
-  isDashActivated: 0
+  isDashActivated: 1
   backGround: {fileID: 3098904857822067927, guid: 07e8d601346f48847829e6fdf914ad94, type: 3}
-  givenSkillDiscriptionstxt: esrtfgsgrfdgrsb
-  nextUnstableThingtxt: gresdrfgyhedrthhedtbh
+  givenSkillDiscriptionstxt: ' '
+  nextUnstableThingtxt: ' '

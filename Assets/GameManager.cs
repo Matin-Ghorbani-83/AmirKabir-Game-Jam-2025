@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -6,6 +7,9 @@ using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
+    public static GameManager instance;
+    public event EventHandler OnWaveChanged;
+
     [SerializeField] PlayerController playerController;
     [SerializeField] SpawnCycleManager spawnCycleManager;
     [SerializeField] RailEnemySpawner railEnemySpawner;
@@ -38,6 +42,10 @@ public class GameManager : MonoBehaviour
     private float timer = 0f;            // Timer for UI
     private int callCount = 0;           // Number of times function was called
 
+    private void Awake()
+    {
+        instance = this;
+    }
     private void Start()
     {
         ChangeMode();
@@ -77,6 +85,7 @@ public class GameManager : MonoBehaviour
 
         // Put your custom code here...
         ChangeMode();
+       
         changePanel.SetActive(true);
         // Pause game for specified duration
         StartCoroutine(PauseGameForSeconds(pauseDuration));
@@ -87,11 +96,13 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 0f;  // Pause game
         yield return new WaitForSecondsRealtime(seconds);
         Time.timeScale = 1f;
+        OnWaveChanged?.Invoke(this, EventArgs.Empty);
         changePanel.SetActive(false);// Resume game
     }
 
     void ChangeMode()
     {
+        OnWaveChanged?.Invoke(this, EventArgs.Empty);
         DestroyByTagAll.instance.DestroyAllWithTwoTags();
         listCounter++;
 
@@ -100,14 +111,20 @@ public class GameManager : MonoBehaviour
         playerController.isDobleJumpActivated = waveSOs[listCounter].isDobleJumpActivated;
         playerController.isDashActivated = waveSOs[listCounter].isDashActivated;
         playerController.isGlideActivated = waveSOs[listCounter].isGlideActivated;
+        //
+        playerController.isKeyBoardStatic = waveSOs[listCounter].staticKeyBoard;
 
         spawnCycleManager.minDestroyInterval = waveSOs[listCounter].minDestroyInterval;
         spawnCycleManager.maxDestroyInterval = waveSOs[listCounter].maxDestroyInterval;
         spawnCycleManager.initialDelay = waveSOs[listCounter].initialDelay;
         spawnCycleManager.respawnDelay = waveSOs[listCounter].respawnDelay;
 
-        railEnemySpawner.maxSpawnTime = waveSOs[listCounter].maxSpawnTimeforrail;
-        railEnemySpawner.minSpawnTime = waveSOs[listCounter].minSpawnTimeforrail;
+        railEnemySpawner.minSpawnTime = waveSOs[listCounter].minSpawnTime;
+        railEnemySpawner.maxSpawnTime = waveSOs[listCounter].maxSpawnTime;
+        railEnemySpawner.exactSpawnTime = waveSOs[listCounter].exactSpawnTime;
+        railEnemySpawner.SpawningEnabled = waveSOs[listCounter].enableSpawning;
+
+        //railEnemySpawner.minSpawnTime = waveSOs[listCounter].minSpawnTimeforrail;
 
         enemySpawnerleft.maximumCount = waveSOs[listCounter].maximumCountLeft;
         enemySpawnerleft.minimumCount = waveSOs[listCounter].minimumCountLeft;
