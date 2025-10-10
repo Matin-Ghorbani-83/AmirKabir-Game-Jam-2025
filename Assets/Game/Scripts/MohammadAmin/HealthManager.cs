@@ -19,7 +19,7 @@ public class HealthManager : MonoBehaviour
 
     private void die(Vector3 obj)
     {
-        SceneManager.LoadScene(0);
+        SceneManager.LoadScene(1);
     }
 
     private void Update()
