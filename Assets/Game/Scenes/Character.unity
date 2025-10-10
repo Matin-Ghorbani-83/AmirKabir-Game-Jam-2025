@@ -1602,6 +1602,22 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2146863181993064424, guid: cef0023a9fb99404b90fa5fc16a60c28, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2146863181993064424, guid: cef0023a9fb99404b90fa5fc16a60c28, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2146863181993064424, guid: cef0023a9fb99404b90fa5fc16a60c28, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 2146863181993064424, guid: cef0023a9fb99404b90fa5fc16a60c28, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -50
+      objectReference: {fileID: 0}
     - target: {fileID: 2164370085620641468, guid: cef0023a9fb99404b90fa5fc16a60c28, type: 3}
       propertyPath: m_Name
       value: Game UI
@@ -1686,6 +1702,22 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8544270657445572212, guid: cef0023a9fb99404b90fa5fc16a60c28, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8544270657445572212, guid: cef0023a9fb99404b90fa5fc16a60c28, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8544270657445572212, guid: cef0023a9fb99404b90fa5fc16a60c28, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 170
+      objectReference: {fileID: 0}
+    - target: {fileID: 8544270657445572212, guid: cef0023a9fb99404b90fa5fc16a60c28, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -50
+      objectReference: {fileID: 0}
     - target: {fileID: 8560106646376334214, guid: cef0023a9fb99404b90fa5fc16a60c28, type: 3}
       propertyPath: m_IsActive
       value: 1
@@ -1695,17 +1727,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cef0023a9fb99404b90fa5fc16a60c28, type: 3}
---- !u!114 &3418695633680837872 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4165162482284286777, guid: cef0023a9fb99404b90fa5fc16a60c28, type: 3}
-  m_PrefabInstance: {fileID: 2272516576614416554}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f7af7cd9bb894a94fb971b14ffcfefd2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &5033280277827514228
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1911,7 +1932,7 @@ PrefabInstance:
     - target: {fileID: 7676579627331509695, guid: fe91a3f27331c3e4ea1ce03755f4764b, type: 3}
       propertyPath: uIManager
       value: 
-      objectReference: {fileID: 3418695633680837872}
+      objectReference: {fileID: 0}
     - target: {fileID: 8464950296962099523, guid: fe91a3f27331c3e4ea1ce03755f4764b, type: 3}
       propertyPath: m_LocalPosition.x
       value: -5.54
