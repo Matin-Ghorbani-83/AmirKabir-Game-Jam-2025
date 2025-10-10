@@ -30,7 +30,7 @@ public class PlayerHealthSystem : MonoBehaviour
     [SerializeField] private LayerMask platformLayerMask;
 
     [Header("UI")]
-    [SerializeField] UIManager uIManager;
+    [SerializeField] HealthManager uIManager;
 
     // ---------- State ----------
     private int currentHearts;
