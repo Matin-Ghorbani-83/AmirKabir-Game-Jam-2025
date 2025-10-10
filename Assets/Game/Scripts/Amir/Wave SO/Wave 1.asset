@@ -28,6 +28,9 @@ MonoBehaviour:
   maximumCountUp: 3
   maxSpawnTimeUp: 4
   minSpawnTimeUp: 2
+  enableSpawning: 0
+  minSpawnTime: 0
+  maxSpawnTime: 0
   exactSpawnTime: 0
   inputChanging: 1
   platformChanging: 0

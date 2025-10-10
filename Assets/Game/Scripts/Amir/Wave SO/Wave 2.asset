@@ -28,8 +28,10 @@ MonoBehaviour:
   maximumCountUp: 0
   maxSpawnTimeUp: 0
   minSpawnTimeUp: 0
-  maxSpawnTimeforrail: 5
-  minSpawnTimeforrail: 1
+  enableSpawning: 1
+  minSpawnTime: 1
+  maxSpawnTime: 5
+  exactSpawnTime: 5
   inputChanging: 0
   platformChanging: 1
   staticPlatform: 0

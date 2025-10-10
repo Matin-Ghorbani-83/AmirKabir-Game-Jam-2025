@@ -28,6 +28,9 @@ MonoBehaviour:
   maximumCountUp: 0
   maxSpawnTimeUp: 0
   minSpawnTimeUp: 0
+  enableSpawning: 1
+  minSpawnTime: 1
+  maxSpawnTime: 5
   exactSpawnTime: 1
   inputChanging: 1
   platformChanging: 1
@@ -36,6 +39,6 @@ MonoBehaviour:
   isDobleJumpActivated: 1
   isGlideActivated: 1
   isDashActivated: 1
-  backGround: {fileID: 0}
-  givenSkillDiscriptionstxt: 
-  nextUnstableThingtxt: 
+  backGround: {fileID: 3098904857822067927, guid: 07e8d601346f48847829e6fdf914ad94, type: 3}
+  givenSkillDiscriptionstxt: Glide
+  nextUnstableThingtxt: Input And Platfroms

@@ -113,10 +113,10 @@ public class GameManager : MonoBehaviour
         spawnCycleManager.initialDelay = waveSOs[listCounter].initialDelay;
         spawnCycleManager.respawnDelay = waveSOs[listCounter].respawnDelay;
 
-        //railEnemySpawner.minSpawnTime= waveSOs[listCounter].minSpawnTime;
-        //railEnemySpawner.maxSpawnTime = waveSOs[listCounter].maxSpawnTime;
-        //railEnemySpawner.exactSpawnTime = waveSOs[listCounter].exactSpawnTime;
-        //railEnemySpawner.spawningEnabled = waveSOs[listCounter].enableSpawning;
+        railEnemySpawner.minSpawnTime = waveSOs[listCounter].minSpawnTime;
+        railEnemySpawner.maxSpawnTime = waveSOs[listCounter].maxSpawnTime;
+        railEnemySpawner.exactSpawnTime = waveSOs[listCounter].exactSpawnTime;
+        railEnemySpawner.SpawningEnabled = waveSOs[listCounter].enableSpawning;
 
         //railEnemySpawner.minSpawnTime = waveSOs[listCounter].minSpawnTimeforrail;
 

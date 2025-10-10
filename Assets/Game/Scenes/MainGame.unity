@@ -924,18 +924,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 41c47a0206182b24d98c286c187796a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SpawnPoints:
+  spawnPoints:
   - {fileID: 1890766996}
   - {fileID: 702115192}
   - {fileID: 1803943845}
   - {fileID: 238160651}
   enemyMovementType: 3
-  maxSpawnTime: 0
-  minSpawnTime: 0
-  exactSpawnTime: 0
-  spawnInExactTime: 1
-  spawnWithRandomMovmentType: 0
-  waitUntilExistingEnemyDestroyed: 1
+  enemyType: 1
+  spawnPointType: 1
+  minSpawnTime: 1
+  maxSpawnTime: 5
+  exactSpawnTime: 5
+  spawnWithRandomMovementType: 0
+  waitUntilNoExistingEnemy: 1
   enemyTag: ShooterEnemy
   spawningEnabled: 1
 --- !u!4 &676073974
@@ -1311,11 +1312,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 6bdee7d043ef5ed4f9741b3a28ce0009, type: 2}
   - {fileID: 11400000, guid: e6fdbf261e31140429e3303e5ce2eeb9, type: 2}
   - {fileID: 11400000, guid: 885d752d4166d1b479c5e63dc4ac3a79, type: 2}
-  - {fileID: 11400000, guid: dcc0119895b0b614290db781cd132aed, type: 2}
   timerText: {fileID: 165491930}
   interval: 10
   maxCalls: 4
-  pauseDuration: 5
+  pauseDuration: 3
 --- !u!4 &884985823
 Transform:
   m_ObjectHideFlags: 0
