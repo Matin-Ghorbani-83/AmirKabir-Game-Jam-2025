@@ -563,7 +563,7 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
-  jumpImpulse: 11
+  jumpImpulse: 14
   variableJumpMultiplier: 0.6
   maxHoldTime: 0.5
   glideGravityScale: 0.1
@@ -581,10 +581,11 @@ MonoBehaviour:
   baseGravityScale: 3.5
   gravityChangeSpeed: 8
   coyoteTime: 0.12
-  isDobleJumpActivated: 1
-  isGlideActivated: 1
+  isDobleJumpActivated: 0
+  isGlideActivated: 0
   isDashActivated: 1
-  isKeyBoardStatic: 0
+  isClimbActivated: 0
+  isKeyBoardStatic: 1
   isChangingInputs: 0
   jumpKey: 32
   changeInputText: {fileID: 0}
