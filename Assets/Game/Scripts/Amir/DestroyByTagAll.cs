@@ -7,6 +7,7 @@ public class DestroyByTagAll : MonoBehaviour
     [Header("Tags to Destroy")]
     public string tag1 = "Enemy";
     public string tag2 = "Obstacle";
+    public string tag3 = "Bullets";
     public static DestroyByTagAll instance;
 
     private void Awake()
@@ -26,6 +27,12 @@ public class DestroyByTagAll : MonoBehaviour
         // پیدا کردن همه آبجکت‌های فعال با tag2
         GameObject[] objs2 = GameObject.FindGameObjectsWithTag(tag2);
         foreach (var obj in objs2)
+        {
+            Destroy(obj);
+        }
+
+        GameObject[] objs3 = GameObject.FindGameObjectsWithTag(tag3);
+        foreach (var obj in objs3)
         {
             Destroy(obj);
         }

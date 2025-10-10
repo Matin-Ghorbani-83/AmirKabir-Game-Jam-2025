@@ -94,6 +94,12 @@ public class SpawnCycleManager : MonoBehaviour
     private Coroutine spawnRoutine = null;
     private bool wasSpawningState;
 
+    public static SpawnCycleManager instance;
+
+    private void Awake()
+    {
+        instance = this;
+    }
     void Start()
     {
         wasSpawningState = enableSpawning;
@@ -674,6 +680,23 @@ public class SpawnCycleManager : MonoBehaviour
         yield return StartCoroutine(SimpleScaleOut(go, destroyScaleDur));
         Destroy(go);
     }
+    // Returns a random Transform from platforms that are still alive (their spawned object hasn't been destroyed).
+    public Transform GetRandomUndestroyedPlatformTransformForMohamadAmin()
+    {
+        List<Transform> alive = new List<Transform>();
+        for (int i = 0; i < active.Count; i++)
+        {
+            var entry = active[i];
+            if (entry != null && entry.obj != null && entry.spawnTransform != null)
+                alive.Add(entry.spawnTransform);
+        }
+
+        if (alive.Count == 0)
+            return null; // or: return GetRandomAnySpawnTransform();
+
+        return alive[UnityEngine.Random.Range(0, alive.Count)];
+    }
+
 
     [ContextMenu("Clear Active (editor only)")]
     public void ClearActiveForEditor()

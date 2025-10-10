@@ -1,9 +1,10 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerController : MonoBehaviour
@@ -40,7 +41,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Glie")]
     [SerializeField] private float glideSpeed = 3f;
-    [SerializeField] private float glideDelay = 0.4f; 
+    [SerializeField] private float glideDelay = 0.4f;
     private float glideHoldTimer = 0f;
 
     [Header("Grab")]
@@ -100,6 +101,8 @@ public class PlayerController : MonoBehaviour
     public bool isChangingInputs;
     public KeyCode jumpKey = KeyCode.Space;
     private KeyCode[] randomKey = { KeyCode.Space, KeyCode.V, KeyCode.B, KeyCode.N };
+    [SerializeField] Text changeInputText;
+    [SerializeField] Text CurrentKey;
     private void Awake()
     {
         instance = this;
@@ -110,6 +113,7 @@ public class PlayerController : MonoBehaviour
     }
     private void Start()
     {
+        StartCoroutine(ChangeInpuuts());
         //PlatformInfoDetector.Instance.OnGrabPointsCollected += HandleGrabPointsReceived;
         //PlatformInfoDetector.Instance.OnTransformPlayerPointsCollected += HandleTransfromPointReceived;
         PlatformInfoDetector.Instance.OnGrabPointsCollected += OnGrabPointsReceived;
@@ -147,42 +151,34 @@ public class PlayerController : MonoBehaviour
     // -------------------------------
     private void HandleInput()
     {
-        if (isChangingInputs)
+
+        float dir = 0f;
+        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) dir -= 1f;
+        if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow)) dir += 1f;
+        SetDirection(dir);
+
+        if (Mathf.Abs(dir) > 0.01f)
+            OnPlayerMove?.Invoke(this, EventArgs.Empty);
+
+        if (Input.GetKeyDown(jumpKey))
         {
-            jumpKey= KeyCode.None;
+            jumpRequested = true;
+
+
+
         }
-        else
+
+        if (didDoubleJump)
+            OnPlayerDoubleJump?.Invoke(this, EventArgs.Empty);
+
+        if (Input.GetKeyDown(KeyCode.LeftShift) && isDashActivated)
+            dashRequested = true;
+        if (isGlideActivated)
         {
-            jumpKey = KeyCode.Space;
+            HandleJumpHold(Input.GetKey(jumpKey));
         }
 
-            float dir = 0f;
-            if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) dir -= 1f;
-            if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow)) dir += 1f;
-            SetDirection(dir);
 
-            if (Mathf.Abs(dir) > 0.01f)
-                OnPlayerMove?.Invoke(this, EventArgs.Empty);
-
-            if (Input.GetKeyDown(jumpKey))
-            {
-                jumpRequested = true;
-
-
-
-            }
-
-            if (didDoubleJump)
-                OnPlayerDoubleJump?.Invoke(this, EventArgs.Empty);
-
-            if (Input.GetKeyDown(KeyCode.LeftShift) && isDashActivated)
-                dashRequested = true;
-            if (isGlideActivated)
-            {
-                HandleJumpHold(Input.GetKey(jumpKey));
-            }
-       
-        
     }
 
     // -------------------------------
@@ -255,7 +251,7 @@ public class PlayerController : MonoBehaviour
                 DoJump();
                 OnPlayerJump?.Invoke(this, EventArgs.Empty);
             }
-            else if (!didDoubleJump && canDoubleJump&& isDobleJumpActivated)
+            else if (!didDoubleJump && canDoubleJump && isDobleJumpActivated)
             {
                 DoJump();
                 didDoubleJump = true;
@@ -322,7 +318,7 @@ public class PlayerController : MonoBehaviour
             if (isGliding || isGrounded)
             {
                 isGliding = false;
-                glideHoldTimer = 0f; 
+                glideHoldTimer = 0f;
                 rb.gravityScale = baseGravityScale;
                 OnPlayerGlideEnd?.Invoke(this, EventArgs.Empty);
             }
@@ -520,10 +516,47 @@ public class PlayerController : MonoBehaviour
     }
 
 
-    IEnumerator aknsfclsdmzkcvs()
+    IEnumerator ChangeInpuuts()
     {
-        yield return new WaitForSeconds(2);
+        int randkey = UnityEngine.Random.Range(0, randomKey.Length);
+
+        // شمارش معکوس 3 ثانیه‌ای
+
+
+        if (isChangingInputs)
+        {
+            int countdown = 3;
+            changeInputText.gameObject.SetActive(true);
+            CurrentKey.gameObject.SetActive(true);
+            while (countdown > 0)
+            {
+                changeInputText.text = "Jump Is Going To Change to " + randomKey[randkey] + " in " + countdown.ToString(); 
+                yield return new WaitForSeconds(1f);       
+                countdown--;
+            }
+            if (countdown <= 0)
+            {
+                changeInputText.gameObject.SetActive(false);
+                jumpKey = randomKey[randkey];
+                CurrentKey.text = "Now key is: " + randomKey[randkey];
+            }
+        }
+        else
+        {
+            changeInputText.gameObject.SetActive(false) ;
+            CurrentKey.gameObject.SetActive(false) ;
+        }
+
+            yield return new WaitForSeconds(2);
+
+        if(isChangingInputs)
+        {   
+            
+            changeInputText.gameObject.SetActive(true);
+        }
+        StartCoroutine(ChangeInpuuts());
         
-        //jumpKey = randomKey[];
     }
+
+
 }

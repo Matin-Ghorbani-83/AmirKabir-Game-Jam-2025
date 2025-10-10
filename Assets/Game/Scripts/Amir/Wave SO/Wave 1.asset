@@ -13,10 +13,29 @@ MonoBehaviour:
   m_Name: Wave 1
   m_EditorClassIdentifier: 
   initialDelay: 0
-  minDestroyInterval: 0
-  maxDestroyInterval: 0
-  respawnDelay: 0
-  minimumCount: 0
-  maximumCount: 0
-  maxSpawnTime: 0
-  minSpawnTime: 0
+  minDestroyInterval: 3
+  maxDestroyInterval: 6
+  respawnDelay: 1
+  minimumCountLeft: 0
+  maximumCountLeft: 0
+  maxSpawnTimeLeft: 0
+  minSpawnTimeLeft: 0
+  minimumCountRight: 0
+  maximumCountRight: 0
+  maxSpawnTimeRight: 0
+  minSpawnTimeRight: 0
+  minimumCountUp: 0
+  maximumCountUp: 0
+  maxSpawnTimeUp: 0
+  minSpawnTimeUp: 0
+  maxSpawnTimeforrail: 5
+  minSpawnTimeforrail: 1
+  inputChanging: 1
+  platformChanging: 1
+  staticPlatform: 0
+  isDobleJumpActivated: 0
+  isGlideActivated: 0
+  isDashActivated: 0
+  backGround: {fileID: 3098904857822067927, guid: 07e8d601346f48847829e6fdf914ad94, type: 3}
+  givenSkillDiscriptionstxt: esrtfgsgrfdgrsb
+  nextUnstableThingtxt: gresdrfgyhedrthhedtbh

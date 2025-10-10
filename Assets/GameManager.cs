@@ -13,52 +13,78 @@ public class GameManager : MonoBehaviour
     [SerializeField] EnemySpawner enemySpawnerright;
     [SerializeField] EnemySpawner enemySpawnerUp;
     [SerializeField] StaticPlatformSpawner staticPlatformSpawner;
-
+    [SerializeField] GameObject changePanel;
+    [SerializeField] Text Abilitytext;
+    [SerializeField] Text nextrandtext;
+    private GameObject backGround;
+    private GameObject tempbg;
     [SerializeField] List<WaveSO> waveSOs;
-    int listCounter = 0;
+    int listCounter = -1;
 
-    public Text timerText;
-    private float timer = 0f;
-    private int callCount = 0;
-    private int maxCalls = 4;
+    [Header("Timer Settings")]
+    public Text timerText;           // Reference to UI TextMeshPro
+    [Tooltip("Interval between function calls in seconds")]
+    public float interval = 60f;         // Change in Inspector (e.g. 10 for 10 seconds)
+    [Tooltip("Maximum number of times the function should be called")]
+    public int maxCalls = 3;
 
+    [Header("Pause Settings")]
+    [Tooltip("How long the game should pause (in seconds, real time)")]
+    public float pauseDuration = 5f;
+
+    private float timer = 0f;            // Timer for UI
+    private int callCount = 0;           // Number of times function was called
+
+    private void Start()
+    {
+        ChangeMode();
+        changePanel.SetActive(false);
+    }
     void Update()
     {
-        if (callCount >= maxCalls) return;
-
-        timer += Time.deltaTime;
-
-        // نمایش تایمر به صورت دقیقه:ثانیه
-        int minutes = Mathf.FloorToInt(timer / 60f);
-        int seconds = Mathf.FloorToInt(timer % 60f);
-        timerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
-
-        // هر ۶۰ ثانیه فقط یکبار
-        if (Mathf.FloorToInt(timer) % 60 == 0 && Mathf.FloorToInt(timer) != 0)
+        if (callCount < maxCalls)
         {
-            if (Mathf.Approximately(timer % 60f, 0f))
+            // Update timer (this stops when timeScale = 0)
+            timer += Time.deltaTime;
+
+            // Display timer in mm:ss format
+            if (timerText != null)
             {
-                CallFunction();
-                callCount++;
+                int minutes = Mathf.FloorToInt(timer / 60f);
+                int seconds = Mathf.FloorToInt(timer % 60f);
+                timerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+            }
+
+            // Calculate next trigger time based on current interval
+            float nextCallTime = (callCount + 1) * Mathf.Max(0.0001f, interval);
+
+            // If it's time to trigger
+            if (timer >= nextCallTime)
+            {
+                CallFunctionOnce();
             }
         }
     }
 
-    void CallFunction()
+    private void CallFunctionOnce()
     {
+        callCount++;
+
+        Debug.Log($"Function called -> Count: {callCount}");
+
+        // Put your custom code here...
         ChangeMode();
-        StartCoroutine(PauseGameForSeconds(5f));
+        changePanel.SetActive(true);
+        // Pause game for specified duration
+        StartCoroutine(PauseGameForSeconds(pauseDuration));
     }
 
-    IEnumerator PauseGameForSeconds(float seconds)
+    private IEnumerator PauseGameForSeconds(float seconds)
     {
-        Time.timeScale = 0f;   // بازی متوقف
-        Debug.Log("بازی متوقف شد برای " + seconds + " ثانیه");
-
-        yield return new WaitForSecondsRealtime(seconds); // ۵ ثانیه واقعی (نه وابسته به تایم اسکیل)
-
-        Time.timeScale = 1f;   // بازی ادامه
-        Debug.Log("بازی دوباره شروع شد");
+        Time.timeScale = 0f;  // Pause game
+        yield return new WaitForSecondsRealtime(seconds);
+        Time.timeScale = 1f;
+        changePanel.SetActive(false);// Resume game
     }
 
     void ChangeMode()
@@ -97,6 +123,22 @@ public class GameManager : MonoBehaviour
         spawnCycleManager.enableSpawning = waveSOs[listCounter].platformChanging;
 
         staticPlatformSpawner.spawnActive = waveSOs[listCounter].staticPlatform;
+
+        if (tempbg != null)
+        {
+            Destroy(tempbg );
+            backGround = waveSOs[listCounter].backGround;
+            tempbg = Instantiate(backGround);
+        }
+        else
+        {
+            backGround = waveSOs[listCounter].backGround;
+             tempbg = Instantiate(backGround);
+        }
+
+        Abilitytext.text = waveSOs[listCounter].givenSkillDiscriptionstxt;
+        nextrandtext.text = waveSOs[listCounter].nextUnstableThingtxt;
+
 
     }
 

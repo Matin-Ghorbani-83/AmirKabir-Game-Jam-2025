@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 54fc9fd459e7a1f4f8e60a41e73de340
+guid: 4e328ee1460d83440a56ee9c47054204
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -48,7 +48,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 40
+  spritePixelsToUnits: 20
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -110,13 +110,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: cartwheel-moving (up-down)_0
+      name: railing 1_0
       rect:
         serializedVersion: 2
-        x: 26
-        y: 35
-        width: 50
-        height: 47
+        x: 43
+        y: 22
+        width: 9
+        height: 168
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -124,20 +124,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 4654020aac37d914db8518d7b6de164e
-      internalID: -1473273516
+      spriteID: 8332b1a93c2bd3f468e0c13655a4e513
+      internalID: -2077036976
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cartwheel-moving (up-down)_1
+      name: railing 1_1
       rect:
         serializedVersion: 2
-        x: 126
-        y: 35
-        width: 50
-        height: 49
+        x: 72
+        y: 134
+        width: 9
+        height: 56
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -145,71 +145,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 0f410da6de2d5fd43890e5aaa914d020
-      internalID: 1970034536
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: cartwheel-moving (up-down)_2
-      rect:
-        serializedVersion: 2
-        x: 226
-        y: 35
-        width: 50
-        height: 50
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 05732a8b525c67f489715c2a8f0745a2
-      internalID: 1713157613
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: cartwheel-moving (up-down)_3
-      rect:
-        serializedVersion: 2
-        x: 326
-        y: 35
-        width: 50
-        height: 49
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 744b864e29137c4488ef5b7eb0c2a84f
-      internalID: 1762919762
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: cartwheel-moving (up-down)_4
-      rect:
-        serializedVersion: 2
-        x: 426
-        y: 35
-        width: 50
-        height: 47
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 7346c74f1da422f4d94fe2c6f0ed21cf
-      internalID: 970660236
+      spriteID: 8c01b3bfc152dca4a978a5878b06a5a8
+      internalID: 434327710
       vertices: []
       indices: 
       edges: []
@@ -225,11 +162,8 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      cartwheel-moving (up-down)_0: -1473273516
-      cartwheel-moving (up-down)_1: 1970034536
-      cartwheel-moving (up-down)_2: 1713157613
-      cartwheel-moving (up-down)_3: 1762919762
-      cartwheel-moving (up-down)_4: 970660236
+      railing 1_0: -2077036976
+      railing 1_1: 434327710
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

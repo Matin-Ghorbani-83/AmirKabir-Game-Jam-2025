@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 [CreateAssetMenu()]
 public class WaveSO : ScriptableObject
@@ -23,7 +24,7 @@ public class WaveSO : ScriptableObject
     public float maxSpawnTimeRight;
     public float minSpawnTimeRight;
 
-    [Header("Bird Enemy Setting Left Right")]
+    [Header("Bird Enemy Setting Left Up")]
     public int minimumCountUp;
     public int maximumCountUp;
     public float maxSpawnTimeUp;
@@ -42,4 +43,11 @@ public class WaveSO : ScriptableObject
     public bool isDobleJumpActivated;
     public bool isGlideActivated;
     public bool isDashActivated;
+
+    [Header("Level Discriptions")]
+    public GameObject backGround;
+    public string givenSkillDiscriptionstxt;
+    public string nextUnstableThingtxt;
+
+    
 }
