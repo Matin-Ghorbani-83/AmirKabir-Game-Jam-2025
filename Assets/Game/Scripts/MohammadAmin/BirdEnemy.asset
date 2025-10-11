@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: BirdEnemy
   m_EditorClassIdentifier: 
   Speed: 4
-  KnockbackForce: {x: 12, y: 8}
+  KnockbackForce: {x: 12, y: 6}
