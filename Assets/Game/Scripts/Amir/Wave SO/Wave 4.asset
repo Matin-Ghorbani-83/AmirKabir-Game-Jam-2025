@@ -17,11 +17,11 @@ MonoBehaviour:
   maxDestroyInterval: 3
   respawnDelay: 2
   minimumCountLeft: 0
-  maximumCountLeft: 2
+  maximumCountLeft: 1
   maxSpawnTimeLeft: 4
   minSpawnTimeLeft: 2
   minimumCountRight: 0
-  maximumCountRight: 2
+  maximumCountRight: 1
   maxSpawnTimeRight: 4
   minSpawnTimeRight: 2
   minimumCountUp: 0
