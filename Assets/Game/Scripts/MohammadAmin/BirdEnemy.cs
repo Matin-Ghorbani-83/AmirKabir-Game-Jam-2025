@@ -30,12 +30,6 @@ public class BirdEnemy : MonoBehaviour, IEnemy
     bool startGetOut = false;
     bool fakeCheck = false;
 
-
-    private void Awake()
-    {
-
-    }
-
     private void Start()
     {
         if (transform.position.x <= 0)
@@ -56,9 +50,9 @@ public class BirdEnemy : MonoBehaviour, IEnemy
                 break;
             case SpawnPointType.Top:
                 if (top)
-                    point.position = new Vector3(transform.position.x, -3f + transform.position.y, 0f);
+                    point.position = new Vector3(transform.position.x, -4f + transform.position.y, 0f);
                 else
-                    point.position = new Vector3(transform.position.x, 3f + transform.position.y, 0f);
+                    point.position = new Vector3(transform.position.x, 4f + transform.position.y, 0f);
                 break;
         }
 
@@ -410,12 +404,14 @@ public class BirdEnemy : MonoBehaviour, IEnemy
         move = false;
         once = false;
         yield return new WaitForSeconds(TIME);
+        GetComponent<CircleCollider2D>().enabled = true;
         move = true;
         anym.SetBool("IsMove", true);
         speed *= 3;
         if (startGetOut)
         {
             getOut = true;
+            GetComponent<CircleCollider2D>().enabled = false;
         }
     }
 
