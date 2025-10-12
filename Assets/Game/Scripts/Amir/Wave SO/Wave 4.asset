@@ -17,17 +17,17 @@ MonoBehaviour:
   maxDestroyInterval: 3
   respawnDelay: 2
   minimumCountLeft: 0
-  maximumCountLeft: 2
-  maxSpawnTimeLeft: 3
-  minSpawnTimeLeft: 1
+  maximumCountLeft: 1
+  maxSpawnTimeLeft: 4
+  minSpawnTimeLeft: 2
   minimumCountRight: 0
-  maximumCountRight: 2
-  maxSpawnTimeRight: 3
-  minSpawnTimeRight: 1
+  maximumCountRight: 1
+  maxSpawnTimeRight: 4
+  minSpawnTimeRight: 2
   minimumCountUp: 0
-  maximumCountUp: 2
-  maxSpawnTimeUp: 2
-  minSpawnTimeUp: 1
+  maximumCountUp: 1
+  maxSpawnTimeUp: 4
+  minSpawnTimeUp: 2
   enableSpawning: 1
   minSpawnTime: 1
   maxSpawnTime: 5

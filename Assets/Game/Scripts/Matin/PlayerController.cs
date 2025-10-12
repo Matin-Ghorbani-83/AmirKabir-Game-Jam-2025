@@ -19,7 +19,7 @@ public class PlayerController : MonoBehaviour
     public event EventHandler OnPlayerGlideStart;
     public event EventHandler OnPlayerGlideEnd;
 
-    [SerializeField]AudioSource m_AudioSource;
+    [SerializeField] AudioSource m_AudioSource;
 
     [SerializeField] AudioClip countDownClip;
 
@@ -108,6 +108,7 @@ public class PlayerController : MonoBehaviour
     private KeyCode[] randomKey = { KeyCode.Space, KeyCode.V, KeyCode.N };
     [SerializeField] Text changeInputText;
     [SerializeField] Text CurrentKey;
+    private bool isWaveChanged = false;
     private void Awake()
     {
         instance = this;
@@ -122,12 +123,23 @@ public class PlayerController : MonoBehaviour
         //PlatformInfoDetector.Instance.OnGrabPointsCollected += HandleGrabPointsReceived;
         //PlatformInfoDetector.Instance.OnTransformPlayerPointsCollected += HandleTransfromPointReceived;
         PlatformInfoDetector.Instance.OnGrabPointsCollected += OnGrabPointsReceived;
+        GameManager.instance.OnWaveChanged += Instance_OnWaveChanged;
     }
 
+    private void Instance_OnWaveChanged(object sender, EventArgs e)
+    {
+        if (m_AudioSource != null && m_AudioSource.isPlaying)
+        {
+            m_AudioSource.Stop();
+        }
 
+      
+    }
 
     private void Update()
     {
+       
+
         if ((isKeyBoardStatic))
         {
             jumpKey = KeyCode.Space;
@@ -530,17 +542,17 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    bool oncePlaye=false;
+    bool oncePlaye = false;
     IEnumerator ChangeInpuuts()
     {
         int randkey = UnityEngine.Random.Range(0, randomKey.Length);
-        
+
         // شمارش معکوس 3 ثانیه‌ای
 
 
         if (isChangingInputs)
         {
-            int countdown = UnityEngine.Random.Range(7, 15);
+            int countdown = 11; /*UnityEngine.Random.Range(7, 15);*/
             changeInputText.gameObject.SetActive(true);
             CurrentKey.gameObject.SetActive(true);
             while (countdown > 0)
@@ -549,20 +561,23 @@ public class PlayerController : MonoBehaviour
                 {
                     changeInputText.text = countdown.ToString();
 
-                    if(oncePlaye == false)
+                    if (oncePlaye == false)
                     {
+                     
+            
                         m_AudioSource.Play();
                         oncePlaye = true;
                     }
                    
+
                 }
-                   
+
                 yield return new WaitForSeconds(1f);
                 countdown--;
             }
             if (countdown <= 0)
             {
-                oncePlaye=false;    
+                oncePlaye = false;
                 changeInputText.text = "";
                 changeInputText.gameObject.SetActive(false);
                 jumpKey = randomKey[randkey];

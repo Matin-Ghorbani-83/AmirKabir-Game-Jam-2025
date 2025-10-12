@@ -18,16 +18,16 @@ MonoBehaviour:
   respawnDelay: 2
   minimumCountLeft: 0
   maximumCountLeft: 1
-  maxSpawnTimeLeft: 2
+  maxSpawnTimeLeft: 3
   minSpawnTimeLeft: 1
   minimumCountRight: 0
   maximumCountRight: 1
-  maxSpawnTimeRight: 2
+  maxSpawnTimeRight: 3
   minSpawnTimeRight: 1
   minimumCountUp: 0
-  maximumCountUp: 2
-  maxSpawnTimeUp: 3
-  minSpawnTimeUp: 1
+  maximumCountUp: 1
+  maxSpawnTimeUp: 4
+  minSpawnTimeUp: 2
   enableSpawning: 1
   minSpawnTime: 1
   maxSpawnTime: 5
