@@ -28,9 +28,9 @@ public class BirdEnemy : MonoBehaviour, IEnemy
     bool once = true;
     bool getOut = false;
     bool startGetOut = false;
+    bool fakeCheck = false;
 
-
-    private void Awake()
+    private void Start()
     {
         if (transform.position.x <= 0)
             right = false;
@@ -46,7 +46,7 @@ public class BirdEnemy : MonoBehaviour, IEnemy
         switch (spawnPointType)
         {
             case SpawnPointType.Side:
-                point.position = new Vector3(-8f + transform.position.x, 0f + transform.position.y, 0f);
+                point.position = new Vector3(-7f + transform.position.x, 0f + transform.position.y, 0f);
                 break;
             case SpawnPointType.Top:
                 if (top)
@@ -55,10 +55,7 @@ public class BirdEnemy : MonoBehaviour, IEnemy
                     point.position = new Vector3(transform.position.x, 4f + transform.position.y, 0f);
                 break;
         }
-    }
 
-    private void Start()
-    {
         speed = sOEnemy.Speed;
         knockbackForce = sOEnemy.KnockbackForce;
 
@@ -82,12 +79,12 @@ public class BirdEnemy : MonoBehaviour, IEnemy
             if (right)
             {
                 // -2f ==> y position for exit enemy
-                transform.position = Vector2.MoveTowards(transform.position, new Vector2(12.5f, -2f), speed * Time.deltaTime);
+                transform.position = Vector2.MoveTowards(transform.position, new Vector2(12.5f, -2f), (speed / 3) * Time.deltaTime);
                 //transform.rotation = Quaternion.Euler(0, 0, 180);
             }
             else
             {
-                transform.position = Vector2.MoveTowards(transform.position, new Vector2(-12.5f, -2f), speed * Time.deltaTime);
+                transform.position = Vector2.MoveTowards(transform.position, new Vector2(-12.5f, -2f), (speed / 3) * Time.deltaTime);
                 //if (transform.localScale.x > 0)
                 //    transform.rotation = Quaternion.Euler(0, 0, 0);
                 //else
@@ -124,13 +121,21 @@ public class BirdEnemy : MonoBehaviour, IEnemy
                 {
                     if (point.position.x <= 0 && once)
                         StartCoroutine(idle());
-                    rb.velocity = Vector2.left * iSpeed * ONE_HUNDRED * Time.deltaTime;
+
+                    if (!fakeCheck)
+                        rb.velocity = Vector2.left * iSpeed * ONE_HUNDRED * Time.deltaTime;
+                    else
+                        rb.velocity = Vector2.right * iSpeed * ONE_HUNDRED * Time.deltaTime;
                 }
                 else
                 {
                     if (point.position.x >= 0 && once)
                         StartCoroutine(idle());
-                    rb.velocity = Vector2.right * iSpeed * ONE_HUNDRED * Time.deltaTime;
+
+                    if (!fakeCheck)
+                        rb.velocity = Vector2.right * iSpeed * ONE_HUNDRED * Time.deltaTime;
+                    else
+                        rb.velocity = Vector2.left * iSpeed * ONE_HUNDRED * Time.deltaTime;
                 }
 
                 break;
@@ -140,13 +145,21 @@ public class BirdEnemy : MonoBehaviour, IEnemy
                 {
                     if (point.position.y <= 0 && once)
                         StartCoroutine(idle());
-                    rb.velocity = Vector2.down * iSpeed * ONE_HUNDRED * Time.deltaTime;
+
+                    if (!fakeCheck)
+                        rb.velocity = Vector2.down * iSpeed * ONE_HUNDRED * Time.deltaTime;
+                    else
+                    rb.velocity = Vector2.up * iSpeed * ONE_HUNDRED * Time.deltaTime;
                 }
                 else
                 {
                     if (point.position.y >= 0 && once)
                         StartCoroutine(idle());
-                    rb.velocity = Vector2.up * iSpeed * ONE_HUNDRED * Time.deltaTime;
+
+                    if (!fakeCheck)
+                        rb.velocity = Vector2.up * iSpeed * ONE_HUNDRED * Time.deltaTime;
+                    else
+                        rb.velocity = Vector2.down * iSpeed * ONE_HUNDRED * Time.deltaTime;
                 }
 
                 break;
@@ -192,7 +205,9 @@ public class BirdEnemy : MonoBehaviour, IEnemy
     {
         if (once)
             StartCoroutine(idle());
-        speed = -speed;
+
+        fakeCheck = true;
+
         Invoke("changeLocalScale", TIME);
     }
 
@@ -389,12 +404,14 @@ public class BirdEnemy : MonoBehaviour, IEnemy
         move = false;
         once = false;
         yield return new WaitForSeconds(TIME);
+        GetComponent<CircleCollider2D>().enabled = true;
         move = true;
         anym.SetBool("IsMove", true);
         speed *= 3;
         if (startGetOut)
         {
             getOut = true;
+            GetComponent<CircleCollider2D>().enabled = false;
         }
     }
 
@@ -408,6 +425,7 @@ public class BirdEnemy : MonoBehaviour, IEnemy
         if (collision.gameObject.CompareTag("Player"))
         {
             Rigidbody2D playerRb = collision.gameObject.GetComponent<Rigidbody2D>();
+            GetComponent<CircleCollider2D>().enabled = false;
 
             switch (spawnPointType)
             {
@@ -432,6 +450,7 @@ public class BirdEnemy : MonoBehaviour, IEnemy
 
         if (collision.gameObject.CompareTag("Platform"))
         {
+            GetComponent<CircleCollider2D>().enabled = false;
             once = true;
             startGetOut = true;
         }

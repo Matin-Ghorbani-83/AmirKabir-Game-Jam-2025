@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc529e68b0e4e944c9c8f018841e5986, type: 3}
+  m_Name: Wave 1
+  m_EditorClassIdentifier: 
+  initialDelay: 0
+  minDestroyInterval: 3
+  maxDestroyInterval: 6
+  respawnDelay: 1
+  minimumCountLeft: 0
+  maximumCountLeft: 1
+  maxSpawnTimeLeft: 3
+  minSpawnTimeLeft: 1
+  minimumCountRight: 0
+  maximumCountRight: 1
+  maxSpawnTimeRight: 3
+  minSpawnTimeRight: 1
+  minimumCountUp: 0
+  maximumCountUp: 1
+  maxSpawnTimeUp: 3
+  minSpawnTimeUp: 1
+  enableSpawning: 0
+  minSpawnTime: 0
+  maxSpawnTime: 0
+  exactSpawnTime: 0
+  inputChanging: 1
+  platformChanging: 0
+  staticPlatform: 1
+  staticKeyBoard: 0
+  isDobleJumpActivated: 0
+  isGlideActivated: 0
+  isDashActivated: 1
+  backGround: {fileID: 1585894125897412628, guid: 0e47fefad9e34da42b66961b445ba502, type: 3}
+  givenSkillDiscriptionstxt: Basic Movement
+  nextUnstableThingtxt: 'Unstable: Random Input'
+  waveName: Wave 1
+  infinit: 0

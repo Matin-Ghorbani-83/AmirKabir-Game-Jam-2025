@@ -1,6 +1,10 @@
-using System;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerController : MonoBehaviour
@@ -14,6 +18,10 @@ public class PlayerController : MonoBehaviour
     public event EventHandler OnPlayerGrab;
     public event EventHandler OnPlayerGlideStart;
     public event EventHandler OnPlayerGlideEnd;
+
+    [SerializeField] AudioSource m_AudioSource;
+
+    [SerializeField] AudioClip countDownClip;
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 6f;
@@ -37,7 +45,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Glie")]
     [SerializeField] private float glideSpeed = 3f;
-    [SerializeField] private float glideDelay = 0.4f; 
+    [SerializeField] private float glideDelay = 0.4f;
     private float glideHoldTimer = 0f;
 
     [Header("Grab")]
@@ -88,6 +96,19 @@ public class PlayerController : MonoBehaviour
     private Vector2 climbBegunPosition;
     private Vector2 climbOverPosition;
 
+
+    public bool isDobleJumpActivated;
+    public bool isGlideActivated;
+    public bool isDashActivated;
+    public bool isClimbActivated;
+    public bool isKeyBoardStatic = false;
+
+    public bool isChangingInputs;
+    public KeyCode jumpKey = KeyCode.Space;
+    private KeyCode[] randomKey = { KeyCode.Space, KeyCode.V, KeyCode.N };
+    [SerializeField] Text changeInputText;
+    [SerializeField] Text CurrentKey;
+    private bool isWaveChanged = false;
     private void Awake()
     {
         instance = this;
@@ -98,15 +119,33 @@ public class PlayerController : MonoBehaviour
     }
     private void Start()
     {
+        StartCoroutine(ChangeInpuuts());
         //PlatformInfoDetector.Instance.OnGrabPointsCollected += HandleGrabPointsReceived;
         //PlatformInfoDetector.Instance.OnTransformPlayerPointsCollected += HandleTransfromPointReceived;
         PlatformInfoDetector.Instance.OnGrabPointsCollected += OnGrabPointsReceived;
+        GameManager.instance.OnWaveChanged += Instance_OnWaveChanged;
     }
 
+    private void Instance_OnWaveChanged(object sender, EventArgs e)
+    {
+        if (m_AudioSource != null && m_AudioSource.isPlaying)
+        {
+            m_AudioSource.Stop();
+        }
 
+      
+    }
 
     private void Update()
     {
+       
+
+        if ((isKeyBoardStatic))
+        {
+            jumpKey = KeyCode.Space;
+            CurrentKey.gameObject.SetActive(false);
+            changeInputText.gameObject.SetActive(false);
+        }
         HandleInput();
         GroundCheck();
         HandleDashTimers();
@@ -135,6 +174,7 @@ public class PlayerController : MonoBehaviour
     // -------------------------------
     private void HandleInput()
     {
+
         float dir = 0f;
         if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) dir -= 1f;
         if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow)) dir += 1f;
@@ -143,7 +183,7 @@ public class PlayerController : MonoBehaviour
         if (Mathf.Abs(dir) > 0.01f)
             OnPlayerMove?.Invoke(this, EventArgs.Empty);
 
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(jumpKey))
         {
             jumpRequested = true;
 
@@ -154,10 +194,14 @@ public class PlayerController : MonoBehaviour
         if (didDoubleJump)
             OnPlayerDoubleJump?.Invoke(this, EventArgs.Empty);
 
-        if (Input.GetKeyDown(KeyCode.LeftShift))
+        if (Input.GetKeyDown(KeyCode.LeftShift) && isDashActivated)
             dashRequested = true;
+        if (isGlideActivated)
+        {
+            HandleJumpHold(Input.GetKey(jumpKey));
+        }
 
-        HandleJumpHold(Input.GetKey(KeyCode.Space));
+
     }
 
     // -------------------------------
@@ -230,7 +274,7 @@ public class PlayerController : MonoBehaviour
                 DoJump();
                 OnPlayerJump?.Invoke(this, EventArgs.Empty);
             }
-            else if (!didDoubleJump && canDoubleJump)
+            else if (!didDoubleJump && canDoubleJump && isDobleJumpActivated)
             {
                 DoJump();
                 didDoubleJump = true;
@@ -297,7 +341,7 @@ public class PlayerController : MonoBehaviour
             if (isGliding || isGrounded)
             {
                 isGliding = false;
-                glideHoldTimer = 0f; 
+                glideHoldTimer = 0f;
                 rb.gravityScale = baseGravityScale;
                 OnPlayerGlideEnd?.Invoke(this, EventArgs.Empty);
             }
@@ -445,32 +489,36 @@ public class PlayerController : MonoBehaviour
     }
     private void CheckForLedge()
     {
-        if ((ledgeDetected && canGrabLedge))
+        if (isClimbActivated)
         {
+            if ((ledgeDetected && canGrabLedge))
+            {
 
-            canGrabLedge = false;
-            isGliding = false;
+                canGrabLedge = false;
+                isGliding = false;
 
 
-            climbBegunPosition = GrabPosition;
-            climbOverPosition = SwitchPosition;
+                climbBegunPosition = GrabPosition;
+                climbOverPosition = SwitchPosition;
 
-            canClimb = true;
+                canClimb = true;
+            }
+
+            if (canClimb)
+            {
+                rb.velocity = new Vector3(0, 0, 0);
+                transform.position = climbBegunPosition;
+
+                isGrounded = false;
+                isGliding = false;
+                isDashing = false;
+
+
+                OnPlayerGrab?.Invoke(this, EventArgs.Empty);
+
+            }
         }
 
-        if (canClimb)
-        {
-            rb.velocity = new Vector3(0, 0, 0);
-            transform.position = climbBegunPosition;
-
-            isGrounded = false;
-            isGliding = false;
-            isDashing = false;
-
-
-            OnPlayerGrab?.Invoke(this, EventArgs.Empty);
-
-        }
     }
     public void LedgeClimbOver()
     {
@@ -493,4 +541,69 @@ public class PlayerController : MonoBehaviour
             Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
         }
     }
+
+    bool oncePlaye = false;
+    IEnumerator ChangeInpuuts()
+    {
+        int randkey = UnityEngine.Random.Range(0, randomKey.Length);
+
+        // شمارش معکوس 3 ثانیه‌ای
+
+
+        if (isChangingInputs)
+        {
+            int countdown = 11; /*UnityEngine.Random.Range(7, 15);*/
+            changeInputText.gameObject.SetActive(true);
+            CurrentKey.gameObject.SetActive(true);
+            while (countdown > 0)
+            {
+                if (countdown <= 4)
+                {
+                    changeInputText.text = countdown.ToString();
+
+                    if (oncePlaye == false)
+                    {
+                     
+            
+                        m_AudioSource.Play();
+                        oncePlaye = true;
+                    }
+                   
+
+                }
+
+                yield return new WaitForSeconds(1f);
+                countdown--;
+            }
+            if (countdown <= 0)
+            {
+                oncePlaye = false;
+                changeInputText.text = "";
+                changeInputText.gameObject.SetActive(false);
+                jumpKey = randomKey[randkey];
+                CurrentKey.text = "Jump : " + randomKey[randkey];
+            }
+        }
+        else
+        {
+            changeInputText.text = "";
+            changeInputText.gameObject.SetActive(false);
+            CurrentKey.gameObject.SetActive(false);
+            jumpKey = randomKey[0];
+            CurrentKey.text = "Jump : Space";
+        }
+
+        yield return new WaitForSeconds(2);
+
+        if (isChangingInputs)
+        {
+
+            changeInputText.gameObject.SetActive(true);
+        }
+
+        StartCoroutine(ChangeInpuuts());
+
+    }
+
+
 }

@@ -5,6 +5,9 @@ using SimpleFactory;
 
 public class ShooterEnemy : MonoBehaviour, IEnemy
 {
+    [SerializeField]
+    AudioSource EnemyAudioSorce;
+
     const int ONE_HUNDRED = 100;
 
     [Header("Choice Movement Type")]
@@ -49,7 +52,10 @@ public class ShooterEnemy : MonoBehaviour, IEnemy
         Movement(sOEnemy.Speed);
         Attack();
     }
-
+    /// <summary>
+    /// //////
+    /// </summary>
+    /// <param name="iSpeed"></param>
     public void Movement(float iSpeed)
     {
         switch (enemyMovementType)
@@ -57,10 +63,12 @@ public class ShooterEnemy : MonoBehaviour, IEnemy
             case EnemyMovementType.Moving:
                 if (top)
                 {
+                    //sound
                     rb.velocity = Vector3.down * iSpeed * ONE_HUNDRED * Time.deltaTime;
                 }
                 else
                 {
+                    //sound
                     rb.velocity = Vector3.up * iSpeed * ONE_HUNDRED * Time.deltaTime;
                 }
                 break;
@@ -70,7 +78,9 @@ public class ShooterEnemy : MonoBehaviour, IEnemy
 
                 if (!arrive)
                 {
-                    transform.position = Vector2.Lerp(transform.position, new Vector2(transform.position.x, shootPositionY), iSpeed * Time.deltaTime);
+                    //sound
+
+                    transform.position = Vector2.Lerp(transform.position, new Vector2(transform.position.x, SpawnCycleManager.instance.GetRandomUndestroyedPlatformTransformForMohamadAmin().position.y + 1f), iSpeed * Time.deltaTime);
                 }
                 else
                 {
@@ -86,6 +96,8 @@ public class ShooterEnemy : MonoBehaviour, IEnemy
     {
         yield return new WaitForSeconds(sOEnemy.FireRate * 2f);
         anym.SetBool("IsMove", true);
+        //sound
+
         transform.position = Vector2.Lerp(transform.position, new Vector2(transform.position.x, -7.5f), (iSpeed / 2) * Time.deltaTime);
     }
 
@@ -96,6 +108,8 @@ public class ShooterEnemy : MonoBehaviour, IEnemy
             case EnemyMovementType.Moving:
                 if (once)
                 {
+                   
+
                     StartCoroutine(shootMoving());
                     once = false;
                 }
@@ -103,6 +117,7 @@ public class ShooterEnemy : MonoBehaviour, IEnemy
             case EnemyMovementType.Const:
                 if (once && arrive)
                 {
+                   
                     StartCoroutine(shootConst());
                     once = false;
                 }
@@ -114,6 +129,8 @@ public class ShooterEnemy : MonoBehaviour, IEnemy
     {
         yield return new WaitForSeconds(sOEnemy.FireRate);
         anym.SetTrigger("Shoot");
+        EnemyAudioSorce.Play();
+
         Instantiate(bullet, bulletPosition.position, Quaternion.identity);
         StartCoroutine(shootMoving());
     }
@@ -121,6 +138,7 @@ public class ShooterEnemy : MonoBehaviour, IEnemy
     {
         yield return new WaitForSeconds(sOEnemy.FireRate);
         anym.SetTrigger("Shoot");
+        EnemyAudioSorce.Play();
         Instantiate(bullet, bulletPosition.position, Quaternion.identity);
         if (sOEnemy.FireCount != count)
         {

@@ -8,6 +8,7 @@ TagManager:
   - Platform
   - Bullet
   - ShooterEnemy
+  - Ground
   layers:
   - Default
   - TransparentFX
@@ -16,9 +17,9 @@ TagManager:
   - Water
   - UI
   - Ground
-  - 
-  - 
-  - 
+  - Platform
+  - Enemy
+  - Particle
   - 
   - 
   - 
@@ -42,6 +43,9 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: BackGround
+    uniqueID: 925133419
+    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0

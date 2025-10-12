@@ -33,6 +33,10 @@ public class OccupancyExclusionRule
 
 public class SpawnCycleManager : MonoBehaviour
 {
+    [Header("Enable/Disable Spawning (runtime)")]
+    [Tooltip("If false, spawning loop is stopped and all spawned objects are destroyed/cleared.")]
+    public bool enableSpawning = true;
+
     [Header("Prefabs & Spawn Points (fallback)")]
     public GameObject[] prefabs;
     public Transform[] spawnPoints;
@@ -47,6 +51,10 @@ public class SpawnCycleManager : MonoBehaviour
     [Header("Initial-only spawn points (used only at Start)")]
     public Transform[] initialOnlySpawnPoints;
     public bool useInitialOnlySpawnPoints = true;
+
+    [Header("Fixed initial spawn (optional)")]
+    public bool useFixedInitialSpawn = false;
+    public Transform[] fixedInitialPoints; // optional, must have >=2 if used
 
     [Header("Pre-destroy warning")]
     [Tooltip("How many seconds BEFORE the actual destroy the pre-destroy visual should run.")]
@@ -80,8 +88,56 @@ public class SpawnCycleManager : MonoBehaviour
     }
     private List<ActiveEntry> active = new List<ActiveEntry>();
 
+    // local pre-destroy coroutines map (for objects without SpawnDestroyAnimator)
+    private Dictionary<GameObject, Coroutine> localPreDestroyCoros = new Dictionary<GameObject, Coroutine>();
+
+    private Coroutine spawnRoutine = null;
+    private bool wasSpawningState;
+
+    public static SpawnCycleManager instance;
+
+    private void Awake()
+    {
+        instance = this;
+    }
     void Start()
     {
+        wasSpawningState = enableSpawning;
+
+        if (enableSpawning)
+        {
+            StartSpawning();
+        }
+    }
+
+    void Update()
+    {
+        // Watch for runtime toggle changes
+        if (enableSpawning != wasSpawningState)
+        {
+            wasSpawningState = enableSpawning;
+            if (enableSpawning)
+            {
+                // Start (or restart) spawning loop
+                if (spawnRoutine == null)
+                    StartSpawning();
+            }
+            else
+            {
+                // Stop spawning and clear everything
+                StopSpawningAndClearAll();
+            }
+        }
+    }
+
+    private void StartSpawning()
+    {
+        if (prefabs == null || prefabs.Length == 0)
+        {
+            Debug.LogError("[SpawnCycleManager] No prefabs assigned!");
+            return;
+        }
+
         if ((spawnGroups == null || spawnGroups.Length == 0)
             && (spawnPoints == null || spawnPoints.Length == 0)
             && (initialOnlySpawnPoints == null || initialOnlySpawnPoints.Length == 0))
@@ -90,58 +146,105 @@ public class SpawnCycleManager : MonoBehaviour
             return;
         }
 
-        if (prefabs == null || prefabs.Length == 0)
+        // If there are already active objects (unlikely on clean start), keep them.
+        // Call initial spawn only if active is empty
+        if (active.Count == 0)
+            SpawnInitialTwo();
+
+        spawnRoutine = StartCoroutine(CycleRoutine());
+    }
+
+    private void StopSpawningAndClearAll()
+    {
+        // stop main routine
+        if (spawnRoutine != null)
         {
-            Debug.LogError("[SpawnCycleManager] No prefabs assigned!");
-            return;
+            StopCoroutine(spawnRoutine);
+            spawnRoutine = null;
         }
 
-        SpawnInitialTwo();
-        StartCoroutine(CycleRoutine());
+        // stop all local pre-destroy coroutines
+        foreach (var kv in new List<KeyValuePair<GameObject, Coroutine>>(localPreDestroyCoros))
+        {
+            if (kv.Value != null)
+                StopCoroutine(kv.Value);
+        }
+        localPreDestroyCoros.Clear();
+
+        // destroy all active objects immediately
+        foreach (var entry in active)
+        {
+            if (entry != null && entry.obj != null)
+            {
+                // If the object has SpawnDestroyAnimator, try to end visuals cleanly (non-blocking)
+                var sda = entry.obj.GetComponent<SpawnDestroyAnimator>();
+                if (sda != null)
+                {
+                    // attempt to end pre-destroy visual if running
+                    try { sda.EndPreDestroy(); } catch { }
+                }
+
+                Destroy(entry.obj);
+            }
+        }
+        active.Clear();
     }
 
     // ---------- initial spawn ----------
     private void SpawnInitialTwo()
     {
+        if (!enableSpawning) return;
+
         List<Transform> allTransforms = GatherAllSpawnTransforms();
         if (allTransforms.Count == 0) { Debug.LogError("[SpawnCycleManager] No spawn transforms available!"); return; }
 
         List<Transform> chosen = new List<Transform>();
 
-        if (useInitialOnlySpawnPoints && initialOnlySpawnPoints != null && initialOnlySpawnPoints.Length > 0)
+        if (useFixedInitialSpawn && fixedInitialPoints != null && fixedInitialPoints.Length >= 2)
         {
-            List<Transform> initialValid = new List<Transform>();
-            foreach (var t in initialOnlySpawnPoints) if (t != null) initialValid.Add(t);
-            List<Transform> temp = new List<Transform>(initialValid);
-            for (int i = 0; i < 2 && temp.Count > 0; i++)
+            chosen.Add(fixedInitialPoints[0]);
+            chosen.Add(fixedInitialPoints[1]);
+        }
+        else
+        {
+            if (useInitialOnlySpawnPoints && initialOnlySpawnPoints != null && initialOnlySpawnPoints.Length > 0)
             {
-                int r = UnityEngine.Random.Range(0, temp.Count);
-                chosen.Add(temp[r]);
-                temp.RemoveAt(r);
+                List<Transform> initialValid = new List<Transform>();
+                foreach (var t in initialOnlySpawnPoints) if (t != null) initialValid.Add(t);
+                List<Transform> temp = new List<Transform>(initialValid);
+                for (int i = 0; i < 2 && temp.Count > 0; i++)
+                {
+                    int r = UnityEngine.Random.Range(0, temp.Count);
+                    chosen.Add(temp[r]);
+                    temp.RemoveAt(r);
+                }
             }
+
+            if (chosen.Count < 2)
+            {
+                List<Transform> available = new List<Transform>(allTransforms);
+                available.RemoveAll(t => chosen.Contains(t));
+                while (chosen.Count < 2 && available.Count > 0)
+                {
+                    int r = UnityEngine.Random.Range(0, available.Count);
+                    chosen.Add(available[r]);
+                    available.RemoveAt(r);
+                }
+            }
+
+            while (chosen.Count < 2)
+                chosen.Add(allTransforms[UnityEngine.Random.Range(0, allTransforms.Count)]);
         }
 
-        if (chosen.Count < 2)
-        {
-            List<Transform> available = new List<Transform>(allTransforms);
-            available.RemoveAll(t => chosen.Contains(t));
-            while (chosen.Count < 2 && available.Count > 0)
-            {
-                int r = UnityEngine.Random.Range(0, available.Count);
-                chosen.Add(available[r]);
-                available.RemoveAt(r);
-            }
-        }
-
-        while (chosen.Count < 2)
-            chosen.Add(allTransforms[UnityEngine.Random.Range(0, allTransforms.Count)]);
-
-        SpawnAtTransform(chosen[0]);
-        SpawnAtTransform(chosen[1]);
+        if (chosen.Count >= 1) SpawnAtTransform(chosen[0]);
+        if (chosen.Count >= 2) SpawnAtTransform(chosen[1]);
     }
 
     private void SpawnAtTransform(Transform t)
     {
+        if (!enableSpawning) return;
+
+        if (t == null) return;
         GameObject prefab = prefabs[UnityEngine.Random.Range(0, prefabs.Length)];
         GameObject go = Instantiate(prefab, t.position, t.rotation);
         var sda = go.GetComponent<SpawnDestroyAnimator>();
@@ -157,6 +260,8 @@ public class SpawnCycleManager : MonoBehaviour
 
         while (true)
         {
+            if (!enableSpawning) yield break; // if toggled off elsewhere, stop immediately
+
             if (active.Count == 0) { SpawnInitialTwo(); yield return null; continue; }
 
             float waitBeforeDestroy = UnityEngine.Random.Range(minDestroyInterval, maxDestroyInterval);
@@ -165,7 +270,8 @@ public class SpawnCycleManager : MonoBehaviour
             float timeUntilPre = Mathf.Max(waitBeforeDestroy - preDestroyWarningTime, 0f);
             if (timeUntilPre > 0f) yield return new WaitForSeconds(timeUntilPre);
 
-            // select which active to destroy
+            if (!enableSpawning) yield break;
+
             int chosenToDestroy = (active.Count == 1) ? 0 : UnityEngine.Random.Range(0, active.Count);
             ActiveEntry toDestroy = active[chosenToDestroy];
 
@@ -175,13 +281,13 @@ public class SpawnCycleManager : MonoBehaviour
                 var sda = toDestroy.obj.GetComponent<SpawnDestroyAnimator>();
                 if (sda != null)
                 {
-                    sda.BeginPreDestroy(); // start continuous pre-destroy visual (looping)
+                    sda.BeginPreDestroy();
                 }
                 else
                 {
-                    // if no SpawnDestroyAnimator, use local pulse coroutine (non-blocking)
-                    // start a coroutine that pulses until we stop it right before destruction
-                    StartCoroutine(LocalBeginPreDestroyFallback(toDestroy.obj));
+                    // start local pulse coroutine (non-blocking)
+                    if (!localPreDestroyCoros.ContainsKey(toDestroy.obj))
+                        localPreDestroyCoros[toDestroy.obj] = StartCoroutine(LocalBeginPreDestroyCoroutine(toDestroy.obj));
                 }
             }
 
@@ -189,20 +295,26 @@ public class SpawnCycleManager : MonoBehaviour
             float remaining = waitBeforeDestroy - timeUntilPre;
             if (remaining > 0f) yield return new WaitForSeconds(remaining);
 
+            if (!enableSpawning) yield break;
+
             // NOW cut pre-destroy visual and play destroy animation (wait for it)
             if (toDestroy.obj != null)
             {
                 var sda2 = toDestroy.obj.GetComponent<SpawnDestroyAnimator>();
                 if (sda2 != null)
                 {
-                    // stop the continuous visual then run destroy animation (PlayDestroy waits)
                     sda2.EndPreDestroy();
                     yield return StartCoroutine(sda2.PlayDestroy());
                     Destroy(toDestroy.obj);
                 }
                 else
                 {
-                    // stop local fallback pulse
+                    // stop local fallback pulse and then scale-out destroy
+                    if (localPreDestroyCoros.ContainsKey(toDestroy.obj))
+                    {
+                        StopCoroutine(localPreDestroyCoros[toDestroy.obj]);
+                        localPreDestroyCoros.Remove(toDestroy.obj);
+                    }
                     yield return StartCoroutine(LocalEndPreDestroyFallbackAndDestroy(toDestroy.obj, 0.28f));
                 }
             }
@@ -214,11 +326,16 @@ public class SpawnCycleManager : MonoBehaviour
             // wait before respawn
             yield return new WaitForSeconds(respawnDelay);
 
+            if (!enableSpawning) yield break;
+
             // choose next spawn transform (may involve waiting if policy=WaitForFree)
             Transform chosenSpawn = null;
             yield return StartCoroutine(ChooseSpawnTransformAfterDestroyCoroutine(toDestroy.prefabUsed, justFreed, (t) => chosenSpawn = t));
 
+            if (!enableSpawning) yield break;
+
             // spawn new object there
+            if (chosenSpawn == null) chosenSpawn = GetRandomAnySpawnTransform();
             GameObject prefabToSpawn = prefabs[UnityEngine.Random.Range(0, prefabs.Length)];
             GameObject newGo = Instantiate(prefabToSpawn, chosenSpawn.position, chosenSpawn.rotation);
             var animComp = newGo.GetComponent<SpawnDestroyAnimator>();
@@ -228,9 +345,11 @@ public class SpawnCycleManager : MonoBehaviour
         }
     }
 
-    // ---------- Choose spawn coroutine (same logic as قبلی, but coroutine for WaitForFree) ----------
+    // ---------- Choose spawn coroutine (full implementation) ----------
     private IEnumerator ChooseSpawnTransformAfterDestroyCoroutine(GameObject destroyedPrefab, Transform excludeTransform, Action<Transform> onChosen)
     {
+        if (!enableSpawning) { onChosen(GetRandomAnySpawnTransform()); yield break; }
+
         List<Transform> candidates = new List<Transform>();
 
         PrefabSpawnRule matchedPrefabRule = null;
@@ -358,6 +477,8 @@ public class SpawnCycleManager : MonoBehaviour
 
                 while (true)
                 {
+                    if (!enableSpawning) { onChosen(GetRandomAnySpawnTransform()); yield break; }
+
                     // recompute dynamic exclusions from occupancy rules
                     excluded.Clear();
                     if (excludeTransform != null) excluded.Add(excludeTransform);
@@ -485,11 +606,9 @@ public class SpawnCycleManager : MonoBehaviour
     }
 
     // ---------- local fallback pre-destroy: non-blocking start ----------
-    private Dictionary<GameObject, Coroutine> localPreDestroyCoros = new Dictionary<GameObject, Coroutine>();
-
-    private IEnumerator LocalBeginPreDestroyCoroutine(GameObject go, float durationInfiniteFlag)
+    private IEnumerator LocalBeginPreDestroyCoroutine(GameObject go)
     {
-        // continuous pulse until explicitly stopped by LocalEndPreDestroyFallbackAndDestroy
+        if (go == null) yield break;
         Vector3 baseScale = go.transform.localScale;
         Vector3 basePos = go.transform.localPosition;
         float elapsed = 0f;
@@ -511,12 +630,37 @@ public class SpawnCycleManager : MonoBehaviour
         }
     }
 
+    private IEnumerator LocalBeginPreDestroyCoroutine(GameObject go, float dummy) // overload not used elsewhere but kept for parity
+    {
+        return LocalBeginPreDestroyCoroutine(go);
+    }
+
+    private IEnumerator LocalBeginPreDestroyCoroutineWrapper(GameObject go)
+    {
+        return LocalBeginPreDestroyCoroutine(go);
+    }
+
+    private IEnumerator LocalBeginPreDestroyCoroutine_NoParams(GameObject go)
+    {
+        return LocalBeginPreDestroyCoroutine(go);
+    }
+
+    private IEnumerator LocalBeginPreDestroyCoroutine_Fallback(GameObject go)
+    {
+        return LocalBeginPreDestroyCoroutine(go);
+    }
+
+    private IEnumerator LocalBeginPreDestroyCoroutine_Short(GameObject go)
+    {
+        return LocalBeginPreDestroyCoroutine(go);
+    }
+
     private IEnumerator LocalBeginPreDestroyFallback(GameObject go)
     {
         if (go == null) yield break;
-        if (localPreDestroyCoros.ContainsKey(go)) yield break; // already running
+        if (localPreDestroyCoros.ContainsKey(go)) yield break;
 
-        Coroutine c = StartCoroutine(LocalBeginPreDestroyCoroutine(go, 0f));
+        Coroutine c = StartCoroutine(LocalBeginPreDestroyCoroutine(go));
         localPreDestroyCoros[go] = c;
         yield break;
     }
@@ -525,27 +669,40 @@ public class SpawnCycleManager : MonoBehaviour
     {
         if (go == null) yield break;
 
-        // stop local pre-destroy coroutine if exists
         if (localPreDestroyCoros.ContainsKey(go))
         {
             StopCoroutine(localPreDestroyCoros[go]);
             localPreDestroyCoros.Remove(go);
         }
 
-        // optional short wait (give a small gap to restore transform if needed)
         yield return null;
 
-        // then destroy with scale out
         yield return StartCoroutine(SimpleScaleOut(go, destroyScaleDur));
         Destroy(go);
     }
+    // Returns a random Transform from platforms that are still alive (their spawned object hasn't been destroyed).
+    public Transform GetRandomUndestroyedPlatformTransformForMohamadAmin()
+    {
+        List<Transform> alive = new List<Transform>();
+        for (int i = 0; i < active.Count; i++)
+        {
+            var entry = active[i];
+            if (entry != null && entry.obj != null && entry.spawnTransform != null)
+                alive.Add(entry.spawnTransform);
+        }
 
-    // Public utility: reset active list (if needed in debug)
+        if (alive.Count == 0)
+            return null; // or: return GetRandomAnySpawnTransform();
+
+        return alive[UnityEngine.Random.Range(0, alive.Count)];
+    }
+
+
     [ContextMenu("Clear Active (editor only)")]
     public void ClearActiveForEditor()
     {
 #if UNITY_EDITOR
-        active.Clear();
+        StopSpawningAndClearAll();
         Debug.Log("[SpawnCycleManager] active cleared (editor).");
 #endif
     }
