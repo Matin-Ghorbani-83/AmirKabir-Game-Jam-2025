@@ -25,9 +25,9 @@ MonoBehaviour:
   maxSpawnTimeRight: 4
   minSpawnTimeRight: 2
   minimumCountUp: 0
-  maximumCountUp: 1
-  maxSpawnTimeUp: 4
-  minSpawnTimeUp: 2
+  maximumCountUp: 2
+  maxSpawnTimeUp: 3
+  minSpawnTimeUp: 1
   enableSpawning: 1
   minSpawnTime: 1
   maxSpawnTime: 5

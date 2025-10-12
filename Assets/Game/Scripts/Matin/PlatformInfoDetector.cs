@@ -37,7 +37,7 @@ public class PlatformInfoDetector : MonoBehaviour
     {
         if (collision.gameObject == currentPlatform)
         {
-            if (debugLogs) Debug.Log($"[PlatformInfoDetector] Left platform: {collision.name}");
+            //if (debugLogs) Debug.Log($"[PlatformInfoDetector] Left platform: {collision.name}");
             currentPlatform = null;
             OnGrabPointsCollected?.Invoke(new List<GrabPointData>());
         }
@@ -92,7 +92,7 @@ public class PlatformInfoDetector : MonoBehaviour
             {
                 string sideName = grab.side.ToString();
                 string switchName = matchedSwitch != null ? matchedSwitch.name : "null";
-                Debug.Log($"[PlatformInfoDetector] → Grab:{grab.name} | Side:{sideName} | Switch:{switchName}");
+                //Debug.Log($"[PlatformInfoDetector] → Grab:{grab.name} | Side:{sideName} | Switch:{switchName}");
             }
         }
 

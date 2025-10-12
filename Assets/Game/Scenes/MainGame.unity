@@ -144,11 +144,11 @@ PrefabInstance:
       objectReference: {fileID: 4165162483045813207}
     - target: {fileID: 7676579627331509695, guid: fe91a3f27331c3e4ea1ce03755f4764b, type: 3}
       propertyPath: heartRegenDelay
-      value: 7
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 7676579627331509695, guid: fe91a3f27331c3e4ea1ce03755f4764b, type: 3}
-      propertyPath: invincibilityDuration
-      value: 2
+      propertyPath: heartFillDuration
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 8464950296962099523, guid: fe91a3f27331c3e4ea1ce03755f4764b, type: 3}
       propertyPath: m_LocalPosition.x

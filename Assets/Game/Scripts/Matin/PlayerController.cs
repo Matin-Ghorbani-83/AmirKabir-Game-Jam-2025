@@ -109,6 +109,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] Text changeInputText;
     [SerializeField] Text CurrentKey;
     private bool isWaveChanged = false;
+    private bool playerDied = false;
     private void Awake()
     {
         instance = this;
@@ -124,6 +125,12 @@ public class PlayerController : MonoBehaviour
         //PlatformInfoDetector.Instance.OnTransformPlayerPointsCollected += HandleTransfromPointReceived;
         PlatformInfoDetector.Instance.OnGrabPointsCollected += OnGrabPointsReceived;
         GameManager.instance.OnWaveChanged += Instance_OnWaveChanged;
+        PlayerHealthSystem.instance.OnPlayerDied += Instance_OnPlayerDied;
+    }
+
+    private void Instance_OnPlayerDied(Vector3 obj)
+    {
+        playerDied = true;
     }
 
     private void Instance_OnWaveChanged(object sender, EventArgs e)
@@ -138,8 +145,17 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-       
+        if (playerDied)
+        {
+            rb.velocity = Vector3.zero;
+            transform.position = Vector3.zero;
+            if (m_AudioSource != null && m_AudioSource.isPlaying)
+            {
+                m_AudioSource.Stop();
+            }
+            return;
 
+        }
         if ((isKeyBoardStatic))
         {
             jumpKey = KeyCode.Space;
@@ -445,7 +461,7 @@ public class PlayerController : MonoBehaviour
 
     private void OnGrabPointsReceived(List<GrabPointData> list)
     {
-        Debug.Log($"[GrabSystem] Received {list.Count} grab points");
+        //Debug.Log($"[GrabSystem] Received {list.Count} grab points");
 
         if (list == null || list.Count == 0) return;
 
@@ -471,7 +487,7 @@ public class PlayerController : MonoBehaviour
         GrabPosition = chosen.grabTransform.position;
         SwitchPosition = chosen.switchTransform != null ? chosen.switchTransform.position : GrabPosition;
 
-        Debug.Log($"[GrabSystem] Facing: {desiredSide}  Selected Grab:{chosen.grabTransform.name} | Hold:{SwitchPosition}");
+        //Debug.Log($"[GrabSystem] Facing: {desiredSide}  Selected Grab:{chosen.grabTransform.name} | Hold:{SwitchPosition}");
     }
 
     private void HandleGrabDirection()

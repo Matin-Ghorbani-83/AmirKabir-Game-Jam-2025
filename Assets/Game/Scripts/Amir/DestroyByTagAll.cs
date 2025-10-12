@@ -37,7 +37,7 @@ public class DestroyByTagAll : MonoBehaviour
             Destroy(obj);
         }
 
-        Debug.Log($"Destroyed {objs1.Length + objs2.Length} objects with tags {tag1} or {tag2}");
+        //Debug.Log($"Destroyed {objs1.Length + objs2.Length} objects with tags {tag1} or {tag2}");
     }
 
     // برای تست سریع از اینسپکتور
