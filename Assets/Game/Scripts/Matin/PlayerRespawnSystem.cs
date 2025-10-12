@@ -35,12 +35,12 @@ public class PlayerRespawnSystem : MonoBehaviour
         healthSystem = PlayerHealthSystem.instance;
         healthSystem.OnRequestRespawn += HandleRespawnRequest;
         healthSystem.OnPlayerDied += HealthSystem_OnPlayerDied;
-        Debug.Log("[RespawnSystem]  Subscribed to OnRequestRespawn event.");
+        //Debug.Log("[RespawnSystem]  Subscribed to OnRequestRespawn event.");
     }
 
     private void HealthSystem_OnPlayerDied(Vector3 obj)
     {
-        SceneManager.LoadScene(0);
+        //SceneManager.LoadScene(0);
        // StartCoroutine(RespawnCoroutine(obj));
     }
 
@@ -51,8 +51,8 @@ public class PlayerRespawnSystem : MonoBehaviour
 
     private void HandleRespawnRequest(Vector3 safePos, PlayerHealthSystem.DamageType type)
     {
-        Debug.Log("OnRespawnRequest Invoked");
-        Debug.Log($"[Respawn] Player died from {type}, teleporting to {safePos} after {respawnDelay}s");
+        //Debug.Log("OnRespawnRequest Invoked");
+        //Debug.Log($"[Respawn] Player died from {type}, teleporting to {safePos} after {respawnDelay}s");
         StartCoroutine(RespawnCoroutine(safePos));
     }
 
@@ -97,6 +97,6 @@ public class PlayerRespawnSystem : MonoBehaviour
             sprite.color = new Color(c.r, c.g, c.b, 1);
         }
 
-        Debug.Log($"[Respawn] Player respawned successfully at {safePos}");
+        //Debug.Log($"[Respawn] Player respawned successfully at {safePos}");
     }
 }

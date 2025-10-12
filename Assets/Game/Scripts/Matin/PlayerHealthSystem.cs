@@ -137,7 +137,7 @@ public class PlayerHealthSystem : MonoBehaviour
     {
         lastSafeRespawnPos = pos;
 
-        Debug.Log($"[HealthSystem] RegisterSafeRespawnPosition: {pos}");
+        //Debug.Log($"[HealthSystem] RegisterSafeRespawnPosition: {pos}");
     }
 
     // ---------- Collision classification ----------
@@ -157,7 +157,7 @@ public class PlayerHealthSystem : MonoBehaviour
         if (other.TryGetComponent<ShooterEnemy>(out ShooterEnemy ShooterEnemy))
         {
             CinemachineShake.Instance.ShakeCamera(5, 1);
-            uIManager.Damage();
+         
             Debug.Log($"[HealthSystem] Collision with BirdEnemy detected at {hitPoint}. Scheduling shooter collision damage.");
             ApplyDamageInternal(DamageType.ShooterCollision, hitPoint, true, shooterDamageDelay, false);
             return;
@@ -167,7 +167,7 @@ public class PlayerHealthSystem : MonoBehaviour
         if (other.TryGetComponent<BulletEnemy>(out BulletEnemy BulletEnemy))
         {
             CinemachineShake.Instance.ShakeCamera(5, 1);
-            uIManager.Damage();
+         
             Debug.Log($"[HealthSystem] Collision with Projectile detected at {hitPoint}. Applying projectile damage.");
             ApplyDamageInternal(DamageType.Projectile, hitPoint, false, 0f, false);
             // optional: let projectile handle its destruction
@@ -177,7 +177,7 @@ public class PlayerHealthSystem : MonoBehaviour
         // you can add more collision checks (spikes, traps...) here
         if (other.TryGetComponent<FallGround>(out FallGround fallGround))
         {
-            uIManager.Damage();
+          
             NotifyFallen();
             return;
         }
@@ -235,6 +235,7 @@ public class PlayerHealthSystem : MonoBehaviour
         }
 
         OnDamageApplied?.Invoke(type, currentHearts, currentCore);
+        uIManager.Damage();
         BroadcastHealth();
 
         // If hearts become 0 and coreHealth > 0, start regen timer
@@ -253,10 +254,16 @@ public class PlayerHealthSystem : MonoBehaviour
         }
 
         // death handling
+        
+    }
+    private void Update()
+    {
         if (currentCore <= 0)
         {
             //  Debug.Log($"[HealthSystem] Player died. Requesting respawn to lastSafeRespawnPos={lastSafeRespawnPos}");
             OnPlayerDied?.Invoke(lastSafeRespawnPos);
+            StopAllCoroutines();
+            return;
             //if (shouldRespawn)
             //{
             //    OnRequestRespawn?.Invoke(lastSafeRespawnPos, type);
@@ -268,6 +275,7 @@ public class PlayerHealthSystem : MonoBehaviour
     {
         // apply fall damage ignoring invincibility and bypassing delay (hearts first then core)
         Debug.Log("[HealthSystem] Applying immediate FALL damage (bypass invincibility).");
+        uIManager.Damage();
 
         // apply damage: hearts first, then core
         if (currentHearts > 0)
@@ -284,6 +292,7 @@ public class PlayerHealthSystem : MonoBehaviour
 
         // start invincibility as normal (so player won't immediately be re-damaged)
         StartInvincibility(invincibilityDuration);
+
 
         // If hearts exhausted and coreHealth > 0, start regen timer
         if (currentHearts == 0 && currentCore > 0 && !isRegenRunning)

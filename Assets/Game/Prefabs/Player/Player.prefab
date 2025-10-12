@@ -80,7 +80,7 @@ MonoBehaviour:
   platformLayer:
     serializedVersion: 2
     m_Bits: 64
-  debugLogs: 1
+  debugLogs: 0
 --- !u!61 &6093991503171129091
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -706,8 +706,8 @@ MonoBehaviour:
   maxHearts: 2
   coreHealth: 1
   shooterDamageDelay: 0.5
-  invincibilityDuration: 1.2
-  heartRegenDelay: 15
+  invincibilityDuration: 2
+  heartRegenDelay: 7
   heartFillDuration: 3
   heartFillSteps: 3
   platformLayerMask:

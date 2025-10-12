@@ -6,6 +6,7 @@ public class PlayerTransromSpawner : MonoBehaviour
 {
     public GameObject playerTransformPrefab;
     private GameObject transfromGameObject;
+    private bool isPlayerDied=false;
 
     private void Awake()
     {
@@ -16,7 +17,8 @@ public class PlayerTransromSpawner : MonoBehaviour
     {
         Instantiate(transfromGameObject, transform.position, Quaternion.identity);
         GameManager.instance.OnWaveChanged += Instance_OnWaveChanged;
-        PlayerHealthSystem.instance.OnPlayerDied += Instance_OnPlayerDied;
+
+       PlayerHealthSystem.instance.OnPlayerDied += Instance_OnPlayerDied;
         PlayerHealthSystem.instance.OnRequestRespawn += Instance_OnRequestRespawn;
         PlayerHealthSystem.instance.lastSafeRespawnPos = transform.position;
         PlayerHealthSystem.instance.RegisterSafeRespawnPosition(transform.position + new Vector3(0, 0.3f, 0));
@@ -52,17 +54,26 @@ public class PlayerTransromSpawner : MonoBehaviour
                 rb.angularVelocity = 0f;
             }
 
-            Debug.Log($"[PlayerTransromSpawner] Teleported player to {respawnPos} on wave change.");
+            //Debug.Log($"[PlayerTransromSpawner] Teleported player to {respawnPos} on wave change.");
         }
 
-        print("WWWWWWWWAVVVVEEE Chaged");
+        //print("WWWWWWWWAVVVVEEE Chaged");
 
     }
 
     private void Instance_OnPlayerDied(Vector3 obj)
     {
+
         PlayerHealthSystem.instance.lastSafeRespawnPos = transform.position;
         Instantiate(transfromGameObject, transform.position, Quaternion.identity);
         PlayerHealthSystem.instance.RegisterSafeRespawnPosition(transform.position + new Vector3(0, 0.3f, 0));
+        isPlayerDied = true;
+    }
+    private void Update()
+    {
+        if (isPlayerDied)
+        {
+            PlayerHealthSystem.instance.RegisterSafeRespawnPosition(transform.position + new Vector3(0, 0.3f, 0));
+        }
     }
 }

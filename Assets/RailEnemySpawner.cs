@@ -153,7 +153,7 @@ public class RailEnemySpawner : MonoBehaviour
         }
 
         spawnCoroutine = StartCoroutine(SpawnLoop());
-        Debug.Log($"[{name}] Spawner started.");
+        //Debug.Log($"[{name}] Spawner started.");
     }
 
     private void StopSpawner()
@@ -162,7 +162,7 @@ public class RailEnemySpawner : MonoBehaviour
         {
             StopCoroutine(spawnCoroutine);
             spawnCoroutine = null;
-            Debug.Log($"[{name}] Spawner stopped.");
+            //Debug.Log($"[{name}] Spawner stopped.");
         }
     }
 
@@ -195,11 +195,11 @@ public class RailEnemySpawner : MonoBehaviour
             float wait = ComputeNextWait();
             if (wait <= 0f)
             {
-                Debug.LogWarning($"[{name}] Computed wait <= 0 ({wait}). Stopping spawner to avoid instant-spawn loop.");
+                //Debug.LogWarning($"[{name}] Computed wait <= 0 ({wait}). Stopping spawner to avoid instant-spawn loop.");
                 yield break;
             }
 
-            Debug.Log($"[{name}] Waiting {wait:F2}s before next spawn...");
+            //Debug.Log($"[{name}] Waiting {wait:F2}s before next spawn...");
             yield return new WaitForSeconds(wait);
 
             // final safety checks

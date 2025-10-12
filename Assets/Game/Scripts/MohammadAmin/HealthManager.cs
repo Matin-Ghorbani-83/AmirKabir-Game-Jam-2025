@@ -13,10 +13,18 @@ public class HealthManager : MonoBehaviour
     bool firstHealth = true;
     bool nullHealth = false;
     float alpha = 0f;
-
+    float progressUI;
     private void Start()
     {
         PlayerHealthSystem.instance.OnPlayerDied += die;
+        PlayerHealthSystem.instance.OnHeartRegenProgress += Instance_OnHeartRegenProgress;
+    }
+
+    private void Instance_OnHeartRegenProgress(int arg1, float Progress)
+    {
+        progressUI = Progress;
+        Revive();
+        Debug.Log(progressUI);
     }
 
     private void die(Vector3 obj)
@@ -31,7 +39,7 @@ public class HealthManager : MonoBehaviour
 
     private void Update()
     {
-        revive();
+        //revive();
     }
 
     public void Damage()
@@ -48,23 +56,27 @@ public class HealthManager : MonoBehaviour
         }
     }
 
-    void revive()
+    void Revive()
     {
         if (nullHealth)
         {
-            StartCoroutine(reviving());
+            StartCoroutine(reviving(progressUI));
             nullHealth = false;
         }
     }
 
-    IEnumerator reviving()
+    IEnumerator reviving(float progres)
     {
-        alpha += (1f / reviveTime);
+        int heartFillDuration = 7;
+        int steps = Mathf.Max(1, 3);
+        float stepDur = Mathf.Max(0.01f, heartFillDuration / steps);
+        //alpha += (1f / reviveTime);
+        alpha += progres;
         hearts[0].gameObject.GetComponent<Image>().color = new Color(1f, 1f, 1f, alpha);
         Debug.Log("Alph: " + alpha);
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(stepDur);
         if (alpha < 1f)
-            StartCoroutine(reviving());
+            StartCoroutine(reviving(progres));
         else if (alpha >= 1f)
         {
             var emissin = particle.emission;

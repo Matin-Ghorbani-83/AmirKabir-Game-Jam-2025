@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 8006905381530769675}
   - component: {fileID: 6803775712222423120}
   - component: {fileID: 980741475209612871}
+  - component: {fileID: 6684583497606349778}
   m_Layer: 6
   m_Name: PlayerTransfrom
   m_TagString: Untagged
@@ -143,4 +144,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a47486d32a84c2240b5be9aed016dc10, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  destroyTime: 2
+  destroyTime: 1.5
+--- !u!95 &6684583497606349778
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6328297914027814336}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: e40ba4d43b00d1642b3623b4823b26c2, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0

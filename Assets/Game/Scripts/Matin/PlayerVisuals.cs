@@ -30,6 +30,14 @@ public class PlayerVisuals : MonoBehaviour
         controller.OnPlayerGrab += OnPlayerGrab;
         controller.OnPlayerGlideStart += Controller_OnPlayerGlideStart;
         controller.OnPlayerGlideEnd += Controller_OnPlayerGlideEnd;
+
+        PlayerHealthSystem.instance.OnPlayerDied += Instance_OnPlayerDied;
+    }
+
+    private void Instance_OnPlayerDied(Vector3 obj)
+    {
+        animator.SetBool("isMoving", false);
+        animator.WriteDefaultValues();
     }
 
     private void Controller_OnPlayerGlideEnd(object sender, EventArgs e)

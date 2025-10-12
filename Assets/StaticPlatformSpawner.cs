@@ -20,7 +20,7 @@ public class StaticPlatformSpawner : MonoBehaviour
 
     void Update()
     {
-        Debug.Log(spawnActive);
+        //Debug.Log(spawnActive);
         // فقط وقتی وضعیت تیک تغییر کرد (از true به false یا برعکس) اجرا کنه
         if (spawnActive != lastState)
         {
