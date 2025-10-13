@@ -1783,7 +1783,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 885d752d4166d1b479c5e63dc4ac3a79, type: 2}
   - {fileID: 11400000, guid: dcc0119895b0b614290db781cd132aed, type: 2}
   timerText: {fileID: 2589056654562363858}
-  interval: 60
+  interval: 10
   maxCalls: 3
   pauseDuration: 3
 --- !u!4 &884985823
