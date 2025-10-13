@@ -42,6 +42,7 @@ public class GameManager : MonoBehaviour
 
     float timerLevel = 0;
 
+    private bool isPlayerDie=false;
     private void Awake()
     {
         instance = this;
@@ -49,11 +50,18 @@ public class GameManager : MonoBehaviour
     }
     private void Start()
     {
+        PlayerHealthSystem.instance.OnPlayerDied += Instance_OnPlayerDied;
         Time.timeScale = 0f;
         timerLevel = interval;
         ChangeMode();
         changePanel.SetActive(true);
     }
+
+    private void Instance_OnPlayerDied(Vector3 obj)
+    {
+       isPlayerDie = true;
+    }
+
     void Update()
     {
 
@@ -64,7 +72,7 @@ public class GameManager : MonoBehaviour
           
             if (waveSOs[listCounter].infinit)
             {
-                if (timerText != null)
+                if (timerText != null && !isPlayerDie)
                 {
                     int minutes = Mathf.FloorToInt(timer / 60f);
                     int seconds = Mathf.FloorToInt(timer % 60f);
