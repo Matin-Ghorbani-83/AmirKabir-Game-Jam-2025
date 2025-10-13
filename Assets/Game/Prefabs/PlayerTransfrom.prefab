@@ -144,7 +144,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a47486d32a84c2240b5be9aed016dc10, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  destroyTime: 1.5
+  destroyTime: 2
 --- !u!95 &6684583497606349778
 Animator:
   serializedVersion: 5
